@@ -9,12 +9,16 @@ import (
 	g "github.com/AllenDang/giu"
 )
 
+const (
+	SELECTED_CLUE_RESET = "-Choose Position and Input Direction-"
+)
+
 var (
 	curPosX         = int32(0)
 	curPosY         = int32(0)
 	curDir          = ClueDirectionNone
 	curClues        = []string{}
-	curSelectedClue = ""
+	curSelectedClue = SELECTED_CLUE_RESET
 	curResultSet    = ClueResultSet{}
 )
 
@@ -42,24 +46,25 @@ func loop() {
 		),
 		),
 		g.Row(
-			g.Label("       "),
-			g.Button(" ^ ").OnClick(func() {
+			g.Label("           "),
+			g.ArrowButton(g.DirectionUp).OnClick(func() {
 				curDir = ClueDirectionUp
 				UpdateClues()
 			}),
 		),
 		g.Row(
-			g.Button(" < ").OnClick(func() {
+			g.Label("  "),
+			g.ArrowButton(g.DirectionLeft).OnClick(func() {
 				curDir = ClueDirectionLeft
 				UpdateClues()
 			}),
-			g.Button(" X ").OnClick(func() {
+			g.Button("    ").OnClick(func() {
 				curDir = ClueDirectionNone
 				curClues = []string{}
-				curSelectedClue = ""
+				curSelectedClue = SELECTED_CLUE_RESET
 				curResultSet = ClueResultSet{}
 			}),
-			g.Button(" > ").OnClick(func() {
+			g.ArrowButton(g.DirectionRight).OnClick(func() {
 				curDir = ClueDirectionRight
 				UpdateClues()
 			}),
@@ -67,8 +72,8 @@ func loop() {
 			g.Button("Travel").OnClick(TravelNextClue),
 		),
 		g.Row(
-			g.Label("       "),
-			g.Button(" v ").OnClick(func() {
+			g.Label("           "),
+			g.ArrowButton(g.DirectionDown).OnClick(func() {
 				curDir = ClueDirectionDown
 				UpdateClues()
 			}),
@@ -85,6 +90,11 @@ func UpdateClues() {
 		Y: int(curPosY),
 	}, curDir, 10)
 	curClues = curResultSet.Pois()
+	if len(curClues) > 0 {
+		curSelectedClue = curClues[0]
+	} else {
+		curSelectedClue = "**Did not find clue with these settings. Retry**"
+	}
 }
 
 func TravelNextClue() {
@@ -102,7 +112,7 @@ func TravelNextClue() {
 	curPosY = int32(pos.Y)
 	curDir = ClueDirectionNone
 	curClues = []string{}
-	curSelectedClue = ""
+	curSelectedClue = SELECTED_CLUE_RESET
 	curResultSet = ClueResultSet{}
 }
 
