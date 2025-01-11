@@ -22,6 +22,7 @@ var (
 	curDir          = ClueDirectionNone
 	curClues        = []string{}
 	curSelectedClue = SELECTED_CLUE_RESET
+	showTravel      = false
 	curResultSet    = ClueResultSet{}
 	lastPosX        = curPosX
 	lastPosY        = curPosY
@@ -43,6 +44,7 @@ func loop() {
 				for i, clue := range curClues {
 					if imgui.SelectableBool(fmt.Sprintf("%s##%d", clue, i)) {
 						curSelectedClue = clue
+						showTravel = true
 					}
 				}
 				imgui.EndCombo()
@@ -78,6 +80,7 @@ func loop() {
 					curClues = []string{}
 					curSelectedClue = SELECTED_CLUE_RESET
 					curResultSet = ClueResultSet{}
+					showTravel = false
 				}).Build()
 			} else {
 				g.Dummy(21.0, 0).Build()
@@ -93,8 +96,10 @@ func loop() {
 			}
 			imgui.SameLine()
 			g.Label("  ").Build()
-			imgui.SameLine()
-			g.Button("Travel").OnClick(TravelNextClue).Build()
+			if showTravel {
+				imgui.SameLine()
+				g.Button("Travel").OnClick(TravelNextClue).Build()
+			}
 		})),
 		g.Row(g.Custom(func() {
 			g.Dummy(22.0, 0).Build()
@@ -117,6 +122,7 @@ func loop() {
 		curClues = []string{}
 		curSelectedClue = SELECTED_CLUE_POS_CHANGED
 		curResultSet = ClueResultSet{}
+		showTravel = false
 	}
 	lastPosX = curPosX
 	lastPosY = curPosY
@@ -130,8 +136,10 @@ func UpdateClues() {
 	curClues = curResultSet.Pois()
 	if len(curClues) > 0 {
 		curSelectedClue = curClues[0]
+		showTravel = true
 	} else {
 		curSelectedClue = SELECTED_CLUE_NOTFOUND
+		showTravel = false
 	}
 }
 
@@ -152,6 +160,7 @@ func TravelNextClue() {
 	curClues = []string{}
 	curSelectedClue = SELECTED_CLUE_TRAVELED
 	curResultSet = ClueResultSet{}
+	showTravel = false
 }
 
 func main() {
