@@ -1,13 +1,29 @@
 package main
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
+	"image"
 	"image/color"
+	"image/png"
 	"log"
 
 	"github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"
 )
+
+//go:embed winres/icon.png
+var appIcon []byte
+
+func DecodeAppIcon() (*image.RGBA, error) {
+	r := bytes.NewReader(appIcon)
+	img, err := png.Decode(r)
+	if err != nil {
+		return nil, fmt.Errorf("LoadImage: error decoding png image: %w", err)
+	}
+	return g.ImageToRgba(img), nil
+}
 
 const (
 	SELECTED_CLUE_RESET       = "[SET Position -> Direction]"
@@ -26,6 +42,7 @@ var (
 	curResultSet    = ClueResultSet{}
 	lastPosX        = curPosX
 	lastPosY        = curPosY
+	rgbaIcon        *image.RGBA
 )
 
 func loop() {
@@ -180,6 +197,8 @@ func main() {
 	wnd := g.NewMasterWindow("DofHunt", 400, 230, g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent)
 	wnd.SetTargetFPS(60)
 	wnd.SetBgColor(color.RGBA{0, 0, 0, 0})
+	rgbaIcon, _ := DecodeAppIcon()
+	wnd.SetIcon(rgbaIcon)
 	wnd.Run(loop)
 
 }

@@ -1,9 +1,8 @@
 package main
 
 import (
-	"io"
+	_ "embed"
 	"log"
-	"os"
 	"strings"
 	"unicode"
 
@@ -30,23 +29,12 @@ func NormalizeString(lang string, s string, lower bool) string {
 	return asciiname
 }
 
-func readJson() ([]byte, error) {
-	jsonFile, err := os.Open("clues.json")
-	if err != nil {
-		return nil, err
-	}
-
-	defer jsonFile.Close()
-	return io.ReadAll(jsonFile)
-}
+//go:embed clues.json
+var jsonDatas []byte
 
 func GetDatas() {
 	log.Println("Reading Datas...")
-	bytes, err := readJson()
-	if err != nil {
-		log.Fatalf("Cannot GetDatas: %v", err)
-	}
-	result := gjson.ParseBytes(bytes)
+	result := gjson.ParseBytes(jsonDatas)
 	log.Println("Loading ClueMap...")
 	result.Get("maps").ForEach(func(key, value gjson.Result) bool {
 		pos := value.Get("position")
