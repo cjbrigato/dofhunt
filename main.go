@@ -76,11 +76,7 @@ func loop() {
 			imgui.SameLine()
 			if curDir != ClueDirectionNone {
 				g.Button("    ").OnClick(func() {
-					curDir = ClueDirectionNone
-					curClues = []string{}
-					curSelectedClue = SELECTED_CLUE_RESET
-					curResultSet = ClueResultSet{}
-					showTravel = false
+					ResetClues(SELECTED_CLUE_RESET)
 				}).Build()
 			} else {
 				g.Dummy(21.0, 0).Build()
@@ -98,7 +94,7 @@ func loop() {
 			g.Label("  ").Build()
 			if showTravel {
 				imgui.SameLine()
-				g.Button("Travel").OnClick(TravelNextClue).Build()
+				g.Button("Confirm Clue").OnClick(TravelNextClue).Build()
 			}
 		})),
 		g.Row(g.Custom(func() {
@@ -113,16 +109,21 @@ func loop() {
 				g.Label("").Build()
 			}
 		})),
+		g.Row(g.Custom(func() {
+			imgui.SeparatorText("History")
+		})),
+		g.Custom(func() {
+			for _, entry := range TravelHistory.GetEntries() {
+				entry.Row().Build()
+			}
+		},
+		),
 	)
 	g.PopStyleColor()
 	g.PopStyleColor()
 	imgui.PopStyleVar()
 	if lastPosX != curPosX || lastPosY != curPosY {
-		curDir = ClueDirectionNone
-		curClues = []string{}
-		curSelectedClue = SELECTED_CLUE_POS_CHANGED
-		curResultSet = ClueResultSet{}
-		showTravel = false
+		ResetClues(SELECTED_CLUE_POS_CHANGED)
 	}
 	lastPosX = curPosX
 	lastPosY = curPosY
@@ -143,6 +144,14 @@ func UpdateClues() {
 	}
 }
 
+func ResetClues(message string) {
+	curDir = ClueDirectionNone
+	curClues = []string{}
+	curSelectedClue = message
+	curResultSet = ClueResultSet{}
+	showTravel = false
+}
+
 func TravelNextClue() {
 	poi := curSelectedClue
 	pos, err := curResultSet.Pos(poi)
@@ -154,13 +163,16 @@ func TravelNextClue() {
 	imgui.LogToClipboard()
 	imgui.LogText(travel)
 	imgui.LogFinish()
+	TravelHistory.AddEntry(MapPosition{
+		X: int(curPosX),
+		Y: int(curPosY),
+	}, curDir, curSelectedClue, MapPosition{
+		X: pos.X,
+		Y: pos.Y,
+	})
 	curPosX = int32(pos.X)
 	curPosY = int32(pos.Y)
-	curDir = ClueDirectionNone
-	curClues = []string{}
-	curSelectedClue = SELECTED_CLUE_TRAVELED
-	curResultSet = ClueResultSet{}
-	showTravel = false
+	ResetClues(SELECTED_CLUE_TRAVELED)
 }
 
 func main() {

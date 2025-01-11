@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"sort"
+
+	g "github.com/AllenDang/giu"
 )
 
 type MapPosition struct {
@@ -19,6 +21,34 @@ const (
 	ClueDirectionUp
 	ClueDirectionNone
 )
+
+func (cd ClueDirection) String() string {
+	switch cd {
+	case ClueDirectionRight:
+		return "right"
+	case ClueDirectionDown:
+		return "down"
+	case ClueDirectionLeft:
+		return "left"
+	case ClueDirectionUp:
+		return "up"
+	}
+	return "none"
+}
+
+func (cd ClueDirection) Button() g.Widget {
+	switch cd {
+	case ClueDirectionRight:
+		return g.ArrowButton(g.DirectionRight)
+	case ClueDirectionDown:
+		return g.ArrowButton(g.DirectionDown)
+	case ClueDirectionLeft:
+		return g.ArrowButton(g.DirectionLeft)
+	case ClueDirectionUp:
+		return g.ArrowButton(g.DirectionUp)
+	}
+	return g.Button("    ")
+}
 
 type ClueResultSet map[string]MapPosition
 
