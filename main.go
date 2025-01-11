@@ -10,7 +10,10 @@ import (
 )
 
 const (
-	SELECTED_CLUE_RESET = "-Choose Position and Input Direction-"
+	SELECTED_CLUE_RESET       = "[SET Position -> Direction]"
+	SELECTED_CLUE_TRAVELED    = "[Choose NEXT -> Direction]"
+	SELECTED_CLUE_POS_CHANGED = "[Position Changed -> Set Direction]"
+	SELECTED_CLUE_NOTFOUND    = "(X_x) No clues. You messed up"
 )
 
 var (
@@ -20,6 +23,8 @@ var (
 	curClues        = []string{}
 	curSelectedClue = SELECTED_CLUE_RESET
 	curResultSet    = ClueResultSet{}
+	lastPosX        = curPosX
+	lastPosY        = curPosY
 )
 
 func loop() {
@@ -45,43 +50,76 @@ func loop() {
 		},
 		),
 		),
-		g.Row(
-			g.Label("           "),
-			g.ArrowButton(g.DirectionUp).OnClick(func() {
-				curDir = ClueDirectionUp
-				UpdateClues()
-			}),
-		),
-		g.Row(
-			g.Label("  "),
-			g.ArrowButton(g.DirectionLeft).OnClick(func() {
-				curDir = ClueDirectionLeft
-				UpdateClues()
-			}),
-			g.Button("    ").OnClick(func() {
-				curDir = ClueDirectionNone
-				curClues = []string{}
-				curSelectedClue = SELECTED_CLUE_RESET
-				curResultSet = ClueResultSet{}
-			}),
-			g.ArrowButton(g.DirectionRight).OnClick(func() {
-				curDir = ClueDirectionRight
-				UpdateClues()
-			}),
-			g.Label("  "),
-			g.Button("Travel").OnClick(TravelNextClue),
-		),
-		g.Row(
-			g.Label("           "),
-			g.ArrowButton(g.DirectionDown).OnClick(func() {
-				curDir = ClueDirectionDown
-				UpdateClues()
-			}),
-		),
+		g.Row(g.Custom(func() {
+			g.Dummy(22.0, 0).Build()
+			if curDir != ClueDirectionUp {
+				imgui.SameLine()
+				g.ArrowButton(g.DirectionUp).OnClick(func() {
+					curDir = ClueDirectionUp
+					UpdateClues()
+				}).Build()
+			} else {
+				g.Label("").Build()
+			}
+		})),
+		g.Row(g.Custom(func() {
+			if curDir != ClueDirectionLeft {
+				g.ArrowButton(g.DirectionLeft).OnClick(func() {
+					curDir = ClueDirectionLeft
+					UpdateClues()
+				}).Build()
+			} else {
+				g.Dummy(22.0, 0).Build()
+			}
+			imgui.SameLine()
+			if curDir != ClueDirectionNone {
+				g.Button("    ").OnClick(func() {
+					curDir = ClueDirectionNone
+					curClues = []string{}
+					curSelectedClue = SELECTED_CLUE_RESET
+					curResultSet = ClueResultSet{}
+				}).Build()
+			} else {
+				g.Dummy(21.0, 0).Build()
+			}
+			imgui.SameLine()
+			if curDir != ClueDirectionRight {
+				g.ArrowButton(g.DirectionRight).OnClick(func() {
+					curDir = ClueDirectionRight
+					UpdateClues()
+				}).Build()
+			} else {
+				g.Dummy(21.0, 0).Build()
+			}
+			imgui.SameLine()
+			g.Label("  ").Build()
+			imgui.SameLine()
+			g.Button("Travel").OnClick(TravelNextClue).Build()
+		})),
+		g.Row(g.Custom(func() {
+			g.Dummy(22.0, 0).Build()
+			if curDir != ClueDirectionDown {
+				imgui.SameLine()
+				g.ArrowButton(g.DirectionDown).OnClick(func() {
+					curDir = ClueDirectionDown
+					UpdateClues()
+				}).Build()
+			} else {
+				g.Label("").Build()
+			}
+		})),
 	)
 	g.PopStyleColor()
 	g.PopStyleColor()
 	imgui.PopStyleVar()
+	if lastPosX != curPosX || lastPosY != curPosY {
+		curDir = ClueDirectionNone
+		curClues = []string{}
+		curSelectedClue = SELECTED_CLUE_POS_CHANGED
+		curResultSet = ClueResultSet{}
+	}
+	lastPosX = curPosX
+	lastPosY = curPosY
 }
 
 func UpdateClues() {
@@ -93,7 +131,7 @@ func UpdateClues() {
 	if len(curClues) > 0 {
 		curSelectedClue = curClues[0]
 	} else {
-		curSelectedClue = "**Did not find clue with these settings. Retry**"
+		curSelectedClue = SELECTED_CLUE_NOTFOUND
 	}
 }
 
@@ -112,7 +150,7 @@ func TravelNextClue() {
 	curPosY = int32(pos.Y)
 	curDir = ClueDirectionNone
 	curClues = []string{}
-	curSelectedClue = SELECTED_CLUE_RESET
+	curSelectedClue = SELECTED_CLUE_TRAVELED
 	curResultSet = ClueResultSet{}
 }
 
