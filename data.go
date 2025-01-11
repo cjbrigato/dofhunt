@@ -4,14 +4,31 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
+	"unicode"
 
 	"github.com/tidwall/gjson"
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 var (
-	clueMap   = make(map[int]map[int][]int)
-	clueNames = make(map[int]string)
+	CluesPosMap  = make(map[int]map[int][]int)
+	ClueNamesMap = make(map[int]string)
 )
+
+func NormalizeString(lang string, s string, lower bool) string {
+	asciiname := s
+	if lang != "en" {
+		t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
+		asciiname, _, _ = transform.String(t, s)
+	}
+	if lower {
+		asciiname = strings.ToLower(asciiname)
+	}
+	return asciiname
+}
 
 func readJson() ([]byte, error) {
 	jsonFile, err := os.Open("clues.json")
@@ -20,7 +37,6 @@ func readJson() ([]byte, error) {
 	}
 
 	defer jsonFile.Close()
-
 	return io.ReadAll(jsonFile)
 }
 
@@ -41,12 +57,12 @@ func GetDatas() {
 		for _, clue := range c {
 			clues = append(clues, int(clue.Int()))
 		}
-		_, ok := clueMap[x]
+		_, ok := CluesPosMap[x]
 		if !ok {
-			clueMap[x] = make(map[int][]int)
+			CluesPosMap[x] = make(map[int][]int)
 		}
-		clueMap[x][y] = clues
-		return true // keep iterating
+		CluesPosMap[x][y] = clues
+		return true
 	})
 	log.Println("Loaded ClueMaps")
 	log.Println("Loading ClueNames...")
@@ -54,7 +70,7 @@ func GetDatas() {
 		id := int(value.Get("clue-id").Int())
 		name := value.Get("name-fr").String()
 		name = NormalizeString("fr", name, true)
-		clueNames[id] = name
+		ClueNamesMap[id] = name
 		return true // keep iterating
 	})
 	log.Println("Loaded ClueNames")

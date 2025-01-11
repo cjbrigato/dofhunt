@@ -45,13 +45,13 @@ func loop() {
 			g.Label("       "),
 			g.Button(" ^ ").OnClick(func() {
 				curDir = ClueDirectionUp
-				Do()
+				UpdateClues()
 			}),
 		),
 		g.Row(
 			g.Button(" < ").OnClick(func() {
 				curDir = ClueDirectionLeft
-				Do()
+				UpdateClues()
 			}),
 			g.Button(" X ").OnClick(func() {
 				curDir = ClueDirectionNone
@@ -61,16 +61,16 @@ func loop() {
 			}),
 			g.Button(" > ").OnClick(func() {
 				curDir = ClueDirectionRight
-				Do()
+				UpdateClues()
 			}),
 			g.Label("  "),
-			g.Button("Travel").OnClick(GetTravelCommand),
+			g.Button("Travel").OnClick(TravelNextClue),
 		),
 		g.Row(
 			g.Label("       "),
 			g.Button(" v ").OnClick(func() {
 				curDir = ClueDirectionDown
-				Do()
+				UpdateClues()
 			}),
 		),
 	)
@@ -79,15 +79,15 @@ func loop() {
 	imgui.PopStyleVar()
 }
 
-func Do() {
-	curResultSet = GetClueResultSet(MapPosition{
+func UpdateClues() {
+	curResultSet = getClueResultSet(MapPosition{
 		X: int(curPosX),
 		Y: int(curPosY),
 	}, curDir, 10)
 	curClues = curResultSet.Pois()
 }
 
-func GetTravelCommand() {
+func TravelNextClue() {
 	poi := curSelectedClue
 	pos, err := curResultSet.Pos(poi)
 	if err != nil {

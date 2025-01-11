@@ -14,28 +14,56 @@ type ClueDirection int
 
 const (
 	ClueDirectionRight ClueDirection = iota
-	_
 	ClueDirectionDown
-	_
 	ClueDirectionLeft
-	_
 	ClueDirectionUp
 	ClueDirectionNone
 )
 
-func GetClueNames(pos MapPosition) []string {
-	clues, ok := clueMap[pos.X][pos.Y]
+type ClueResultSet map[string]MapPosition
+
+func (crs ClueResultSet) Pois() []string {
+	r := make([]string, 0, len(crs))
+	for k := range crs {
+		r = append(r, k)
+	}
+	sort.Strings(r)
+	return r
+}
+
+func (crs ClueResultSet) Pos(p string) (*MapPosition, error) {
+	pos, ok := crs[p]
+	if !ok {
+		return nil, fmt.Errorf("this clue/poi does not exists in result set")
+	}
+	return &pos, nil
+}
+
+func (m *MapPosition) TravelCommand() string {
+	return fmt.Sprintf("/travel %d %d", m.X, m.Y)
+}
+
+func (m *MapPosition) DirectedMapPositionsSet(dir ClueDirection) []MapPosition {
+	return directedMapPositions(*m, dir, 10)
+}
+
+func (m *MapPosition) GetClueNames() []string {
+	clues, ok := CluesPosMap[m.X][m.Y]
 	if !ok {
 		return nil
 	}
 	names := make([]string, 0)
 	for _, clue := range clues {
-		names = append(names, clueNames[clue])
+		names = append(names, ClueNamesMap[clue])
 	}
 	return names
 }
 
-func GetMapPositions(start MapPosition, dir ClueDirection, limit int) []MapPosition {
+func (m *MapPosition) FindNextClue(dir ClueDirection) ClueResultSet {
+	return getClueResultSet(*m, dir, 10)
+}
+
+func directedMapPositions(start MapPosition, dir ClueDirection, limit int) []MapPosition {
 	if limit < 1 {
 		return nil
 	}
@@ -73,11 +101,11 @@ func GetMapPositions(start MapPosition, dir ClueDirection, limit int) []MapPosit
 	return results
 }
 
-func GetClueResultSet(start MapPosition, dir ClueDirection, limit int) ClueResultSet {
+func getClueResultSet(start MapPosition, dir ClueDirection, limit int) ClueResultSet {
 	results := make(ClueResultSet)
-	positions := GetMapPositions(start, dir, limit)
+	positions := directedMapPositions(start, dir, limit)
 	for _, position := range positions {
-		names := GetClueNames(position)
+		names := position.GetClueNames()
 		for _, name := range names {
 			if _, ok := results[name]; !ok {
 				results[name] = position
@@ -85,32 +113,4 @@ func GetClueResultSet(start MapPosition, dir ClueDirection, limit int) ClueResul
 		}
 	}
 	return results
-}
-
-type ClueResultSet map[string]MapPosition
-
-func (m *MapPosition) TravelCommand() string {
-	return fmt.Sprintf("/travel %d %d", m.X, m.Y)
-}
-
-func (crs ClueResultSet) Pois() []string {
-	pois := Keys(crs)
-	sort.Strings(pois)
-	return pois
-}
-
-func (crs ClueResultSet) Pos(p string) (*MapPosition, error) {
-	pos, ok := crs[p]
-	if !ok {
-		return nil, fmt.Errorf("this clue/poi does not exists in result set")
-	}
-	return &pos, nil
-}
-
-func Keys[M ~map[K]V, K comparable, V any](m M) []K {
-	r := make([]K, 0, len(m))
-	for k := range m {
-		r = append(r, k)
-	}
-	return r
 }
