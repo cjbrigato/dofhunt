@@ -4,6 +4,10 @@ a quick app to ease with dofus 3.0 treasure hunts without depending on dofusdb c
 ## demo
 [![DofHunt](https://img.youtube.com/vi/Pcuv9M-DRMM/0.jpg)](https://www.youtube.com/watch?v=Pcuv9M-DRMM)
 
+## Screenshot
+![image](https://github.com/user-attachments/assets/5ec58f52-3293-4bc6-a33b-7fdfd9be562e)
+
+
 ## Install
 * Download latest release https://github.com/cjbrigato/dofhunt/releases/latest
 * Just run the executable, it is now all standalone
