@@ -2,7 +2,7 @@
 a quick app to ease with dofus 3.0 treasure hunts without depending on dofusdb closed datas
 
 ## demo
-[![DofHunt](https://img.youtube.com/vi/VctPdZhyzWU/0.jpg)](https://www.youtube.com/watch?v=VctPdZhyzWU)
+[![DofHunt](https://img.youtube.com/vi/Pcuv9M-DRMM/0.jpg)](https://www.youtube.com/watch?v=Pcuv9M-DRMM)
 
 ## Install
 * Download latest release https://github.com/cjbrigato/dofhunt/releases/latest
