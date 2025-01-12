@@ -48,10 +48,37 @@ var (
 	curSelectedIndex int32
 	filterText       = ""
 	wnd              *g.MasterWindow
-	wasDrawing       = false
+	isMovingFrame    = false
 	language         = "fr"
 	initialized      = false
 )
+
+func FramelessMovableWidget(widget g.Widget) *g.CustomWidget {
+	return g.Custom(func() {
+		if isMovingFrame && !g.IsMouseDown(g.MouseButtonLeft) {
+			isMovingFrame = false
+			return
+		}
+
+		widget.Build()
+
+		if g.IsItemHovered() {
+			if g.IsMouseDown(g.MouseButtonLeft) {
+				isMovingFrame = true
+			}
+		}
+
+		if isMovingFrame {
+			delta := imgui.CurrentIO().MouseDelta()
+			dx := int(delta.X)
+			dy := int(delta.Y)
+			if dx != 0 || dy != 0 {
+				ox, oy := wnd.GetPos()
+				wnd.SetPos(ox+dx, oy+dy)
+			}
+		}
+	})
+}
 
 func loop() {
 
@@ -85,27 +112,9 @@ func loop() {
 		)
 	} else {
 		g.SingleWindow().Layout(
-			g.Custom(func() {
-				if wasDrawing && !g.IsMouseDown(g.MouseButtonLeft) {
-					wasDrawing = false
-					return
-				}
+			FramelessMovableWidget(g.Custom(func() {
 				imgui.SeparatorText("DofHunt")
-				if g.IsItemHovered() {
-					if g.IsMouseDown(g.MouseButtonLeft) {
-						wasDrawing = true
-					}
-				}
-				if wasDrawing {
-					delta := imgui.CurrentIO().MouseDelta()
-					dx := int(delta.X)
-					dy := int(delta.Y)
-					if dx != 0 || dy != 0 {
-						ox, oy := wnd.GetPos()
-						wnd.SetPos(ox+dx, oy+dy)
-					}
-				}
-			}),
+			})),
 			g.Row(g.Custom(func() {
 				imgui.PushItemWidth(40.0)
 				g.DragInt("X", &curPosX, -100, 150).Build()
