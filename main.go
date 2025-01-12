@@ -53,7 +53,7 @@ var (
 	initialized      = false
 )
 
-func FramelessMovableWidget(widget g.Widget) *g.CustomWidget {
+func framelessWindowMoveWidget(widget g.Widget) *g.CustomWidget {
 	return g.Custom(func() {
 		if isMovingFrame && !g.IsMouseDown(g.MouseButtonLeft) {
 			isMovingFrame = false
@@ -80,6 +80,56 @@ func FramelessMovableWidget(widget g.Widget) *g.CustomWidget {
 	})
 }
 
+func langSetupLayout() *g.RowWidget {
+	return g.Row(g.Custom(func() {
+		g.Label("Game Language:").Build()
+		imgui.SameLine()
+		if imgui.BeginComboV("##dialogfilters", language, imgui.ComboFlags(imgui.ComboFlagsHeightRegular)) {
+			for i, lang := range SupportedLanguages {
+				if imgui.SelectableBool(fmt.Sprintf("%s##%d", lang.FriendlyName, i)) {
+					language = lang.countryCode
+				}
+			}
+			imgui.EndCombo()
+		}
+		g.Button("Select").OnClick(func() {
+			GetDatas(language)
+			initialized = true
+		},
+		).Build()
+	},
+	))
+}
+
+func headerLayout() *g.RowWidget {
+	return g.Row(g.Custom(func() {
+		imgui.PushItemWidth(40.0)
+		g.DragInt("X", &curPosX, -100, 150).Build()
+		imgui.SameLine()
+		g.DragInt("Y", &curPosY, -100, 150).Build()
+		imgui.PopItemWidth()
+		imgui.SameLine()
+
+		g.InputText(&filterText).Build()
+		filterClues(&filterText)
+	},
+	),
+	)
+}
+
+func filterClues(filter *string) {
+	if *filter != "" && len(curClues) > 0 {
+		curFilteredClues = []string{}
+		for _, clue := range curClues {
+			if strings.Contains(strings.ToLower(clue), NormalizeString(language, *filter, true)) {
+				curFilteredClues = append(curFilteredClues, clue)
+			}
+		}
+	} else {
+		curFilteredClues = curClues
+	}
+}
+
 func loop() {
 
 	imgui.PushStyleVarFloat(imgui.StyleVarWindowBorderSize, 0)
@@ -91,51 +141,14 @@ func loop() {
 	g.PushColorFrameBg(color.RGBA{30, 30, 60, 110})
 	if !initialized {
 		g.SingleWindow().Layout(
-			g.Row(g.Custom(func() {
-				g.Label("Game Language:").Build()
-				imgui.SameLine()
-				if imgui.BeginComboV("##dialogfilters", language, imgui.ComboFlags(imgui.ComboFlagsHeightRegular)) {
-					for i, lang := range SupportedLanguages {
-						if imgui.SelectableBool(fmt.Sprintf("%s##%d", lang.FriendlyName, i)) {
-							language = lang.countryCode
-						}
-					}
-					imgui.EndCombo()
-				}
-				g.Button("Select").OnClick(func() {
-					GetDatas(language)
-					initialized = true
-				},
-				).Build()
-			},
-			)),
+			langSetupLayout(),
 		)
 	} else {
 		g.SingleWindow().Layout(
-			FramelessMovableWidget(g.Custom(func() {
+			framelessWindowMoveWidget(g.Custom(func() {
 				imgui.SeparatorText("DofHunt")
 			})),
-			g.Row(g.Custom(func() {
-				imgui.PushItemWidth(40.0)
-				g.DragInt("X", &curPosX, -100, 150).Build()
-				imgui.SameLine()
-				g.DragInt("Y", &curPosY, -100, 150).Build()
-				imgui.PopItemWidth()
-				imgui.SameLine()
-				g.InputText(&filterText).Build()
-				if filterText != "" && len(curClues) > 0 {
-					curFilteredClues = []string{}
-					for _, clue := range curClues {
-						if strings.Contains(strings.ToLower(clue), strings.ToLower(filterText)) {
-							curFilteredClues = append(curFilteredClues, clue)
-						}
-					}
-				} else {
-					curFilteredClues = curClues
-				}
-			},
-			),
-			),
+			headerLayout(),
 			g.Row(
 				g.Child().Size(115, 100).Layout(
 					g.Row(g.Custom(func() {
