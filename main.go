@@ -47,15 +47,41 @@ var (
 	rgbaIcon         *image.RGBA
 	curSelectedIndex int32
 	filterText       = ""
+	wnd              *g.MasterWindow
+	wasDrawing       = false
 )
 
 func loop() {
+
 	imgui.PushStyleVarFloat(imgui.StyleVarWindowBorderSize, 0)
+	imgui.PushStyleVarFloat(imgui.StyleVarWindowRounding, 6.0)
 	imgui.PushStyleVarFloat(imgui.StyleVarChildBorderSize, 0)
 	imgui.PushStyleColorVec4(imgui.ColChildBg, g.ToVec4Color(color.RGBA{50, 50, 70, 0}))
+	imgui.PushStyleColorVec4(imgui.ColButton, g.ToVec4Color(color.RGBA{50, 50, 70, 130}))
 	g.PushColorWindowBg(color.RGBA{50, 50, 70, 130})
 	g.PushColorFrameBg(color.RGBA{30, 30, 60, 110})
 	g.SingleWindow().Layout(
+		g.Custom(func() {
+			if wasDrawing && !g.IsMouseDown(g.MouseButtonLeft) {
+				wasDrawing = false
+				return
+			}
+			imgui.SeparatorText("DofHunt")
+			if g.IsItemHovered() {
+				if g.IsMouseDown(g.MouseButtonLeft) {
+					wasDrawing = true
+				}
+			}
+			if wasDrawing {
+				delta := imgui.CurrentIO().MouseDelta()
+				dx := int(delta.X)
+				dy := int(delta.Y)
+				if dx != 0 || dy != 0 {
+					ox, oy := wnd.GetPos()
+					wnd.SetPos(ox+dx, oy+dy)
+				}
+			}
+		}),
 		g.Row(g.Custom(func() {
 			imgui.PushItemWidth(40.0)
 			g.DragInt("X", &curPosX, -100, 150).Build()
@@ -74,15 +100,6 @@ func loop() {
 			} else {
 				curFilteredClues = curClues
 			}
-			/*if imgui.BeginComboV("##dialogfilters", curSelectedClue, imgui.ComboFlags(imgui.ComboFlagsHeightRegular)) {
-				for i, clue := range curClues {
-					if imgui.SelectableBool(fmt.Sprintf("%s##%d", clue, i)) {
-						curSelectedClue = clue
-						canConfirm = true
-					}
-				}
-				imgui.EndCombo()
-			}*/
 		},
 		),
 		),
@@ -157,7 +174,7 @@ func loop() {
 			),
 		),
 		g.Row(g.Custom(func() {
-			imgui.SeparatorText("History")
+			imgui.SeparatorText("")
 		})),
 		g.Custom(func() {
 			for _, entry := range TravelHistory.GetEntries() {
@@ -170,6 +187,8 @@ func loop() {
 	g.PopStyleColor()
 	imgui.PopStyleVar()
 	imgui.PopStyleVar()
+	imgui.PopStyleVar()
+	imgui.PopStyleColor()
 	imgui.PopStyleColor()
 
 	if lastPosX != curPosX || lastPosY != curPosY {
@@ -228,11 +247,12 @@ func TravelNextClue() {
 
 func main() {
 	GetDatas()
-	wnd := g.NewMasterWindow("DofHunt", 400, 260, g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent)
+	wnd = g.NewMasterWindow("DofHunt", 380, 265, g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFrameless|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent) //g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent)
 	wnd.SetTargetFPS(60)
 	wnd.SetBgColor(color.RGBA{0, 0, 0, 0})
 	rgbaIcon, _ := DecodeAppIcon()
 	wnd.SetIcon(rgbaIcon)
+	wnd.SetPos(21, 21)
 	wnd.Run(loop)
 
 }
