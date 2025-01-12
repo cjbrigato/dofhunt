@@ -6,7 +6,7 @@ a quick app to ease with dofus 3.0 treasure hunts without depending on dofusdb c
 
 ## Multilang support
 * added in alpha 0.6
-  ![image](https://github.com/user-attachments/assets/cf97aebf-ef03-44cb-a5f2-a8b0d69e7bfc)
+* ![image](https://github.com/user-attachments/assets/cf97aebf-ef03-44cb-a5f2-a8b0d69e7bfc)
 
 ## Install
 * Download latest release https://github.com/cjbrigato/dofhunt/releases/latest
