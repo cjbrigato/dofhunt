@@ -49,6 +49,8 @@ var (
 	filterText       = ""
 	wnd              *g.MasterWindow
 	wasDrawing       = false
+	language         = "fr"
+	initialized      = false
 )
 
 func loop() {
@@ -60,129 +62,152 @@ func loop() {
 	imgui.PushStyleColorVec4(imgui.ColButton, g.ToVec4Color(color.RGBA{50, 50, 70, 130}))
 	g.PushColorWindowBg(color.RGBA{50, 50, 70, 130})
 	g.PushColorFrameBg(color.RGBA{30, 30, 60, 110})
-	g.SingleWindow().Layout(
-		g.Custom(func() {
-			if wasDrawing && !g.IsMouseDown(g.MouseButtonLeft) {
-				wasDrawing = false
-				return
-			}
-			imgui.SeparatorText("DofHunt")
-			if g.IsItemHovered() {
-				if g.IsMouseDown(g.MouseButtonLeft) {
-					wasDrawing = true
+	if !initialized {
+		g.SingleWindow().Layout(
+			g.Row(g.Custom(func() {
+				g.Label("Game Language:").Build()
+				imgui.SameLine()
+				if imgui.BeginComboV("##dialogfilters", language, imgui.ComboFlags(imgui.ComboFlagsHeightRegular)) {
+					for i, lang := range SupportedLanguages {
+						if imgui.SelectableBool(fmt.Sprintf("%s##%d", lang.FriendlyName, i)) {
+							language = lang.countryCode
+						}
+					}
+					imgui.EndCombo()
 				}
-			}
-			if wasDrawing {
-				delta := imgui.CurrentIO().MouseDelta()
-				dx := int(delta.X)
-				dy := int(delta.Y)
-				if dx != 0 || dy != 0 {
-					ox, oy := wnd.GetPos()
-					wnd.SetPos(ox+dx, oy+dy)
+				g.Button("Select").OnClick(func() {
+					GetDatas(language)
+					initialized = true
+				},
+				).Build()
+			},
+			)),
+		)
+	} else {
+		g.SingleWindow().Layout(
+			g.Custom(func() {
+				if wasDrawing && !g.IsMouseDown(g.MouseButtonLeft) {
+					wasDrawing = false
+					return
 				}
-			}
-		}),
-		g.Row(g.Custom(func() {
-			imgui.PushItemWidth(40.0)
-			g.DragInt("X", &curPosX, -100, 150).Build()
-			imgui.SameLine()
-			g.DragInt("Y", &curPosY, -100, 150).Build()
-			imgui.PopItemWidth()
-			imgui.SameLine()
-			g.InputText(&filterText).Build()
-			if filterText != "" && len(curClues) > 0 {
-				curFilteredClues = []string{}
-				for _, clue := range curClues {
-					if strings.Contains(strings.ToLower(clue), strings.ToLower(filterText)) {
-						curFilteredClues = append(curFilteredClues, clue)
+				imgui.SeparatorText("DofHunt")
+				if g.IsItemHovered() {
+					if g.IsMouseDown(g.MouseButtonLeft) {
+						wasDrawing = true
 					}
 				}
-			} else {
-				curFilteredClues = curClues
-			}
-		},
-		),
-		),
-		g.Row(
-			g.Child().Size(115, 100).Layout(
-				g.Row(g.Custom(func() {
-					g.Dummy(22.0, 0).Build()
-					if curDir != ClueDirectionUp {
-						imgui.SameLine()
-						g.ArrowButton(g.DirectionUp).OnClick(func() {
-							curDir = ClueDirectionUp
-							UpdateClues()
-						}).Build()
-					} else {
-						g.Label("").Build()
+				if wasDrawing {
+					delta := imgui.CurrentIO().MouseDelta()
+					dx := int(delta.X)
+					dy := int(delta.Y)
+					if dx != 0 || dy != 0 {
+						ox, oy := wnd.GetPos()
+						wnd.SetPos(ox+dx, oy+dy)
 					}
-				})),
-				g.Row(g.Custom(func() {
-					if curDir != ClueDirectionLeft {
-						g.ArrowButton(g.DirectionLeft).OnClick(func() {
-							curDir = ClueDirectionLeft
-							UpdateClues()
-						}).Build()
-					} else {
+				}
+			}),
+			g.Row(g.Custom(func() {
+				imgui.PushItemWidth(40.0)
+				g.DragInt("X", &curPosX, -100, 150).Build()
+				imgui.SameLine()
+				g.DragInt("Y", &curPosY, -100, 150).Build()
+				imgui.PopItemWidth()
+				imgui.SameLine()
+				g.InputText(&filterText).Build()
+				if filterText != "" && len(curClues) > 0 {
+					curFilteredClues = []string{}
+					for _, clue := range curClues {
+						if strings.Contains(strings.ToLower(clue), strings.ToLower(filterText)) {
+							curFilteredClues = append(curFilteredClues, clue)
+						}
+					}
+				} else {
+					curFilteredClues = curClues
+				}
+			},
+			),
+			),
+			g.Row(
+				g.Child().Size(115, 100).Layout(
+					g.Row(g.Custom(func() {
 						g.Dummy(22.0, 0).Build()
-					}
-					imgui.SameLine()
-					if curDir != ClueDirectionNone {
-						g.Button("    ").OnClick(func() {
-							ResetClues(SELECTED_CLUE_RESET)
-						}).Build()
-					} else {
-						g.Dummy(21.0, 0).Build()
-					}
-					imgui.SameLine()
-					if curDir != ClueDirectionRight {
-						g.ArrowButton(g.DirectionRight).OnClick(func() {
-							curDir = ClueDirectionRight
-							UpdateClues()
-						}).Build()
-					} else {
-						g.Dummy(21.0, 0).Build()
-					}
-				})),
-				g.Row(g.Custom(func() {
-					g.Dummy(22.0, 0).Build()
-					if curDir != ClueDirectionDown {
+						if curDir != ClueDirectionUp {
+							imgui.SameLine()
+							g.ArrowButton(g.DirectionUp).OnClick(func() {
+								curDir = ClueDirectionUp
+								UpdateClues()
+							}).Build()
+						} else {
+							g.Label("").Build()
+						}
+					})),
+					g.Row(g.Custom(func() {
+						if curDir != ClueDirectionLeft {
+							g.ArrowButton(g.DirectionLeft).OnClick(func() {
+								curDir = ClueDirectionLeft
+								UpdateClues()
+							}).Build()
+						} else {
+							g.Dummy(22.0, 0).Build()
+						}
 						imgui.SameLine()
-						g.ArrowButton(g.DirectionDown).OnClick(func() {
-							curDir = ClueDirectionDown
-							UpdateClues()
-						}).Build()
-					} else {
-						g.Label("").Build()
-					}
-				})),
-				g.Row(g.Custom(func() {
-					if canConfirm {
-						g.Button("Confirm Clue").OnClick(TravelNextClue).Build()
-					} else {
-						g.Label("").Build()
-					}
-				})),
+						if curDir != ClueDirectionNone {
+							g.Button("    ").OnClick(func() {
+								ResetClues(SELECTED_CLUE_RESET)
+							}).Build()
+						} else {
+							g.Dummy(21.0, 0).Build()
+						}
+						imgui.SameLine()
+						if curDir != ClueDirectionRight {
+							g.ArrowButton(g.DirectionRight).OnClick(func() {
+								curDir = ClueDirectionRight
+								UpdateClues()
+							}).Build()
+						} else {
+							g.Dummy(21.0, 0).Build()
+						}
+					})),
+					g.Row(g.Custom(func() {
+						g.Dummy(22.0, 0).Build()
+						if curDir != ClueDirectionDown {
+							imgui.SameLine()
+							g.ArrowButton(g.DirectionDown).OnClick(func() {
+								curDir = ClueDirectionDown
+								UpdateClues()
+							}).Build()
+						} else {
+							g.Label("").Build()
+						}
+					})),
+					g.Row(g.Custom(func() {
+						if canConfirm {
+							g.Button("Confirm Clue").OnClick(TravelNextClue).Build()
+						} else {
+							g.Label("").Build()
+						}
+					})),
+				),
+				g.Child().Size(-1, 100).Layout(
+					g.Custom(func() {
+						g.ListBox(curFilteredClues).SelectedIndex(&curSelectedIndex).Build()
+						if len(curFilteredClues) > int(curSelectedIndex) {
+							curSelectedClue = curFilteredClues[curSelectedIndex]
+						}
+					}),
+				),
 			),
-			g.Child().Size(-1, 100).Layout(
-				g.Custom(func() {
-					g.ListBox(curFilteredClues).SelectedIndex(&curSelectedIndex).Build()
-					if len(curFilteredClues) > int(curSelectedIndex) {
-						curSelectedClue = curFilteredClues[curSelectedIndex]
-					}
-				}),
+			g.Row(g.Custom(func() {
+				imgui.SeparatorText("")
+			})),
+			g.Custom(func() {
+				for _, entry := range TravelHistory.GetEntries() {
+					entry.Row().Build()
+				}
+			},
 			),
-		),
-		g.Row(g.Custom(func() {
-			imgui.SeparatorText("")
-		})),
-		g.Custom(func() {
-			for _, entry := range TravelHistory.GetEntries() {
-				entry.Row().Build()
-			}
-		},
-		),
-	)
+		)
+	}
 	g.PopStyleColor()
 	g.PopStyleColor()
 	imgui.PopStyleVar()
@@ -246,13 +271,12 @@ func TravelNextClue() {
 }
 
 func main() {
-	GetDatas()
 	wnd = g.NewMasterWindow("DofHunt", 380, 265, g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFrameless|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent) //g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent)
 	wnd.SetTargetFPS(60)
 	wnd.SetBgColor(color.RGBA{0, 0, 0, 0})
 	rgbaIcon, _ := DecodeAppIcon()
 	wnd.SetIcon(rgbaIcon)
-	wnd.SetPos(21, 21)
+	wnd.SetPos(300, 300)
 	wnd.Run(loop)
 
 }

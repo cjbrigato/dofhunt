@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"log"
 	"strings"
 	"unicode"
@@ -32,7 +33,8 @@ func NormalizeString(lang string, s string, lower bool) string {
 //go:embed clues.json
 var jsonDatas []byte
 
-func GetDatas() {
+func GetDatas(countryCode string) {
+	langKey := fmt.Sprintf("name-%s", countryCode)
 	log.Println("Reading Datas...")
 	result := gjson.ParseBytes(jsonDatas)
 	log.Println("Loading ClueMap...")
@@ -56,10 +58,10 @@ func GetDatas() {
 	log.Println("Loading ClueNames...")
 	result.Get("clues").ForEach(func(key, value gjson.Result) bool {
 		id := int(value.Get("clue-id").Int())
-		name := value.Get("name-fr").String()
-		name = NormalizeString("fr", name, true)
+		name := value.Get(langKey).String()
+		name = NormalizeString(countryCode, name, true)
 		ClueNamesMap[id] = name
-		return true // keep iterating
+		return true 
 	})
 	log.Println("Loaded ClueNames")
 }

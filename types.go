@@ -7,6 +7,34 @@ import (
 	g "github.com/AllenDang/giu"
 )
 
+type SupportedLanguage struct {
+	countryCode  string
+	FriendlyName string
+}
+
+var SupportedLanguages = []SupportedLanguage{
+	SupportedLanguage{
+		countryCode:  "fr",
+		FriendlyName: "Francais",
+	},
+	SupportedLanguage{
+		countryCode:  "en",
+		FriendlyName: "English",
+	},
+	SupportedLanguage{
+		countryCode:  "es",
+		FriendlyName: "Espanol",
+	},
+	SupportedLanguage{
+		countryCode:  "de",
+		FriendlyName: "Deutsch",
+	},
+	SupportedLanguage{
+		countryCode:  "pt",
+		FriendlyName: "Portugues",
+	},
+}
+
 type MapPosition struct {
 	X int
 	Y int
