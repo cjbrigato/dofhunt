@@ -34,23 +34,24 @@ const (
 )
 
 var (
-	curPosX          = int32(0)
-	curPosY          = int32(0)
-	curDir           = ClueDirectionNone
-	curClues         = []string{}
-	curFilteredClues = []string{}
-	curSelectedClue  = SELECTED_CLUE_RESET
-	canConfirm       = false
-	curResultSet     = ClueResultSet{}
-	lastPosX         = curPosX
-	lastPosY         = curPosY
-	rgbaIcon         *image.RGBA
-	curSelectedIndex int32
-	filterText       = ""
-	wnd              *g.MasterWindow
-	isMovingFrame    = false
-	language         = "fr"
-	initialized      = false
+	curPosX           = int32(0)
+	curPosY           = int32(0)
+	curDir            = ClueDirectionNone
+	curClues          = []string{}
+	curFilteredClues  = []string{}
+	curSelectedClue   = SELECTED_CLUE_RESET
+	canConfirm        = false
+	curResultSet      = ClueResultSet{}
+	lastPosX          = curPosX
+	lastPosY          = curPosY
+	rgbaIcon          *image.RGBA
+	curSelectedIndex  int32
+	filterText        = ""
+	wnd               *g.MasterWindow
+	isMovingFrame     = false
+	language          = "fr"
+	initialized       = false
+	shouldFilterFocus = false
 )
 
 func framelessWindowMoveWidget(widget g.Widget) *g.CustomWidget {
@@ -115,7 +116,10 @@ func headerLayout() *g.RowWidget {
 		g.DragInt("Y", &curPosY, -100, 150).Build()
 		imgui.PopItemWidth()
 		imgui.SameLine()
-
+		if shouldFilterFocus {
+			g.SetKeyboardFocusHere()
+			shouldFilterFocus = false
+		}
 		g.InputText(&filterText).Build()
 		filterClues(&filterText)
 	},
@@ -261,6 +265,7 @@ func UpdateClues() {
 	}, curDir, 10)
 	curClues = curResultSet.Pois()
 	if len(curClues) > 0 {
+		shouldFilterFocus = true
 		curSelectedClue = curClues[0]
 		canConfirm = true
 	} else {
