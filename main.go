@@ -80,6 +80,12 @@ func framelessWindowMoveWidget(widget g.Widget) *g.CustomWidget {
 	})
 }
 
+func titleLayout() *g.CustomWidget {
+	return framelessWindowMoveWidget(g.Custom(func() {
+		imgui.SeparatorText("DofHunt")
+	}))
+}
+
 func langSetupLayout() *g.RowWidget {
 	return g.Row(g.Custom(func() {
 		g.Label("Game Language:").Build()
@@ -131,7 +137,9 @@ func filterClues(filter *string) {
 }
 
 func loop() {
-
+	imgui.PushStyleVarVec2(imgui.StyleVarCellPadding, imgui.Vec2{1.0, 1.0})
+	imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{1.0, 1.0})
+	imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextPadding, imgui.Vec2{20.0, 0.0})
 	imgui.PushStyleVarFloat(imgui.StyleVarWindowBorderSize, 0)
 	imgui.PushStyleVarFloat(imgui.StyleVarWindowRounding, 6.0)
 	imgui.PushStyleVarFloat(imgui.StyleVarChildBorderSize, 0)
@@ -141,13 +149,12 @@ func loop() {
 	g.PushColorFrameBg(color.RGBA{30, 30, 60, 110})
 	if !initialized {
 		g.SingleWindow().Layout(
+			titleLayout(),
 			langSetupLayout(),
 		)
 	} else {
 		g.SingleWindow().Layout(
-			framelessWindowMoveWidget(g.Custom(func() {
-				imgui.SeparatorText("DofHunt")
-			})),
+			titleLayout(),
 			headerLayout(),
 			g.Row(
 				g.Child().Size(115, 100).Layout(
@@ -220,18 +227,20 @@ func loop() {
 				),
 			),
 			g.Row(g.Custom(func() {
-				imgui.SeparatorText("")
+				imgui.SeparatorText("History")
 			})),
 			g.Custom(func() {
-				for _, entry := range TravelHistory.GetEntries() {
-					entry.Row().Build()
+				if len(TravelHistory.GetEntries()) > 0 {
+					TravelHistory.Table().Build()
 				}
-			},
-			),
+			}),
 		)
 	}
 	g.PopStyleColor()
 	g.PopStyleColor()
+	imgui.PopStyleVar()
+	imgui.PopStyleVar()
+	imgui.PopStyleVar()
 	imgui.PopStyleVar()
 	imgui.PopStyleVar()
 	imgui.PopStyleVar()
@@ -293,7 +302,7 @@ func TravelNextClue() {
 }
 
 func main() {
-	wnd = g.NewMasterWindow("DofHunt", 380, 265, g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFrameless|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent) //g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent)
+	wnd = g.NewMasterWindow("DofHunt", 380, 260, g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFrameless|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent) //g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent)
 	wnd.SetTargetFPS(60)
 	wnd.SetBgColor(color.RGBA{0, 0, 0, 0})
 	rgbaIcon, _ := DecodeAppIcon()

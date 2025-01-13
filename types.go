@@ -64,6 +64,20 @@ func (cd ClueDirection) String() string {
 	return "none"
 }
 
+func (cd ClueDirection) Arrow() string {
+	switch cd {
+	case ClueDirectionRight:
+		return "→"
+	case ClueDirectionDown:
+		return "↓"
+	case ClueDirectionLeft:
+		return "←"
+	case ClueDirectionUp:
+		return "↑"
+	}
+	return "none"
+}
+
 func (cd ClueDirection) Button() g.Widget {
 	switch cd {
 	case ClueDirectionRight:
