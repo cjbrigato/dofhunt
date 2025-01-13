@@ -51,8 +51,8 @@ func (t *TravelHistoryCollection) GetEntries() []TravelHistoryEntry {
 func (t *TravelHistoryCollection) GenerateCurrentFileListTableRow() []*g.TableRowWidget {
 
 	rows := make([]*g.TableRowWidget, 0)
-	for _, entry := range t.GetEntries() {
-		rows = append(rows, entry.TableRow())
+	for i := len(t.entries) - 1; i >= 0; i-- {
+		rows = append(rows, t.entries[i].TableRow())
 	}
 	return rows
 }
