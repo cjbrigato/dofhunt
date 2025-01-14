@@ -14,16 +14,34 @@ import (
 	g "github.com/AllenDang/giu"
 )
 
-//go:embed winres/icon.png
-var appIcon []byte
-
-func DecodeAppIcon() (*image.RGBA, error) {
-	r := bytes.NewReader(appIcon)
+func DecodeEmbedded(data []byte) (*image.RGBA, error) {
+	r := bytes.NewReader(data)
 	img, err := png.Decode(r)
 	if err != nil {
 		return nil, fmt.Errorf("LoadImage: error decoding png image: %w", err)
 	}
 	return g.ImageToRgba(img), nil
+}
+
+//go:embed winres/splash.png
+var splashHeaderLogo []byte
+
+func DecodeSplashHeaderLogo() (*image.RGBA, error) {
+	return DecodeEmbedded(splashHeaderLogo)
+}
+
+//go:embed winres/icon16.png
+var appIcon16 []byte
+
+func DecodeAppIcon16() (*image.RGBA, error) {
+	return DecodeEmbedded(appIcon16)
+}
+
+//go:embed winres/icon.png
+var appIcon []byte
+
+func DecodeAppIcon() (*image.RGBA, error) {
+	return DecodeEmbedded(appIcon)
 }
 
 const (
@@ -44,8 +62,12 @@ var (
 	curResultSet       = ClueResultSet{}
 	lastPosX           = curPosX
 	lastPosY           = curPosY
+	rgbaIcon16         *image.RGBA
 	rgbaIcon           *image.RGBA
-	curSelectedIndex   int32
+	headerSplashRgba   *image.RGBA
+	splashTexture      = &g.ReflectiveBoundTexture{}
+	icon16Texture      = &g.ReflectiveBoundTexture{}
+	curSelectedIndex   = int32(-1)
 	filterText         = ""
 	wnd                *g.MasterWindow
 	isMovingFrame      = false
@@ -82,29 +104,27 @@ func framelessWindowMoveWidget(widget g.Widget) *g.CustomWidget {
 	})
 }
 
-func titleLayout() *g.CustomWidget {
+func titleBarLayout() *g.CustomWidget {
 	return framelessWindowMoveWidget(g.Custom(func() {
+		icon16Texture.ToImageWidget().Scale(0.75, 0.75).Build()
+		imgui.SameLine()
+		imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{0.0, 1.0})
+		imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextPadding, imgui.Vec2{20.0, 2.0})
 		imgui.SeparatorText("DofHunt")
+		imgui.PopStyleVarV(2)
 	}))
 }
 
 func langSetupLayout() *g.RowWidget {
 	return g.Row(g.Custom(func() {
-		g.Label("Game Language:").Build()
-		imgui.SameLine()
-		if imgui.BeginComboV("##dialogfilters", language, imgui.ComboFlags(imgui.ComboFlagsHeightRegular)) {
-			for i, lang := range SupportedLanguages {
-				if imgui.SelectableBool(fmt.Sprintf("%s##%d", lang.FriendlyName, i)) {
-					language = lang.countryCode
-				}
-			}
-			imgui.EndCombo()
-		}
-		g.Button("Select").OnClick(func() {
-			GetDatas(language)
+		g.Dummy(-1, 5).Build()
+		imgui.PushStyleVarVec2(imgui.StyleVarSelectableTextAlign, imgui.Vec2{0.5, 0.0})
+		g.ListBox(AppSupportedLanguages.Langs()).Size(-1, 100).SelectedIndex(AppSupportedLanguages.SelectedIndex()).OnChange(func(idx int) {
+			langs := AppSupportedLanguages.Langs()
+			GetDatas(AppSupportedLanguages.CountryCode(langs[idx]))
 			initialized = true
-		},
-		).Build()
+		}).Build()
+		imgui.PopStyleVar()
 	},
 	))
 }
@@ -159,7 +179,11 @@ func loop() {
 	g.PushColorFrameBg(color.RGBA{30, 30, 60, 110})
 	if !initialized {
 		g.SingleWindow().Layout(
-			titleLayout(),
+			g.Dummy(-1, 5),
+			framelessWindowMoveWidget(splashTexture.ToImageWidget()),
+			g.Custom(func() {
+				imgui.SeparatorText("Hunt Smarter")
+			}),
 			langSetupLayout(),
 		)
 	} else {
@@ -171,7 +195,7 @@ func loop() {
 				g.WindowFlags(imgui.WindowFlagsNoResize)|
 				g.WindowFlags(imgui.WindowFlagsNoNav),
 		).Layout(
-			titleLayout(),
+			titleBarLayout(),
 			headerLayout(),
 			g.Row(
 				g.Child().Flags(g.WindowFlagsNoNav).Size(115, 100).Layout(
@@ -248,20 +272,30 @@ func loop() {
 							curSelectedIndex = int32(selectedIndex)
 							if len(curFilteredClues) > int(selectedIndex) {
 								curSelectedClue = curFilteredClues[selectedIndex]
+								TravelNextClue()
 							}
+						}
+					}
+					onDclick := func(selectedIndex int) {
+						curSelectedIndex = int32(selectedIndex)
+						if len(curFilteredClues) > int(selectedIndex) {
+							curSelectedClue = curFilteredClues[selectedIndex]
 							TravelNextClue()
 						}
 					}
-					g.ListBox(curFilteredClues).Size(-1, 100).OnChange(onChange).SelectedIndex(&curSelectedIndex).Build()
-					if len(curFilteredClues) > int(curSelectedIndex) {
+					g.ListBox(curFilteredClues).Size(-1, 100).OnChange(onChange).SelectedIndex(&curSelectedIndex).OnDClick(onDclick).Build()
+					if int(curSelectedIndex) >= 0 && len(curFilteredClues) > int(curSelectedIndex) {
 						curSelectedClue = curFilteredClues[curSelectedIndex]
 					} else {
-						curSelectedIndex = 0
+						curSelectedIndex = -1
 					}
 				}),
 			),
 			g.Row(g.Custom(func() {
+				imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{1.0, 1.0})
+				imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextPadding, imgui.Vec2{20.0, 0.0})
 				imgui.SeparatorText("History")
+				imgui.PopStyleVarV(2)
 			})),
 			g.Custom(func() {
 				if len(TravelHistory.GetEntries()) > 0 {
@@ -337,11 +371,14 @@ func TravelNextClue() {
 }
 
 func main() {
-	wnd = g.NewMasterWindow("DofHunt", 380, 260, g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFrameless|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent) //g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent)
+	wnd = g.NewMasterWindow("DofHunt", 380, 263, g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFrameless|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent) //g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent)
 	wnd.SetTargetFPS(60)
 	wnd.SetBgColor(color.RGBA{0, 0, 0, 0})
-	rgbaIcon, _ := DecodeAppIcon()
-	wnd.SetIcon(rgbaIcon)
+	rgbaIcon, _ = DecodeAppIcon()
+	rgbaIcon16, _ = DecodeAppIcon16()
+	headerSplashRgba, _ := DecodeSplashHeaderLogo()
+	splashTexture.SetSurfaceFromRGBA(headerSplashRgba, false)
+	icon16Texture.SetSurfaceFromRGBA(rgbaIcon16, false)
 	wnd.SetPos(300, 300)
 	wnd.Run(loop)
 
