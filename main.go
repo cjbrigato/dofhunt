@@ -34,24 +34,25 @@ const (
 )
 
 var (
-	curPosX           = int32(0)
-	curPosY           = int32(0)
-	curDir            = ClueDirectionNone
-	curClues          = []string{}
-	curFilteredClues  = []string{}
-	curSelectedClue   = SELECTED_CLUE_RESET
-	canConfirm        = false
-	curResultSet      = ClueResultSet{}
-	lastPosX          = curPosX
-	lastPosY          = curPosY
-	rgbaIcon          *image.RGBA
-	curSelectedIndex  int32
-	filterText        = ""
-	wnd               *g.MasterWindow
-	isMovingFrame     = false
-	language          = "fr"
-	initialized       = false
-	shouldFilterFocus = false
+	curPosX            = int32(0)
+	curPosY            = int32(0)
+	curDir             = ClueDirectionNone
+	curClues           = []string{}
+	curFilteredClues   = []string{}
+	curSelectedClue    = SELECTED_CLUE_RESET
+	canConfirm         = false
+	curResultSet       = ClueResultSet{}
+	lastPosX           = curPosX
+	lastPosY           = curPosY
+	rgbaIcon           *image.RGBA
+	curSelectedIndex   int32
+	filterText         = ""
+	wnd                *g.MasterWindow
+	isMovingFrame      = false
+	language           = "fr"
+	initialized        = false
+	shouldFilterFocus  = false
+	shouldListboxFocus = false
 )
 
 func framelessWindowMoveWidget(widget g.Widget) *g.CustomWidget {
@@ -108,6 +109,10 @@ func langSetupLayout() *g.RowWidget {
 	))
 }
 
+func onChange() {
+	shouldListboxFocus = true
+}
+
 func headerLayout() *g.RowWidget {
 	return g.Row(g.Custom(func() {
 		imgui.PushItemWidth(40.0)
@@ -120,7 +125,7 @@ func headerLayout() *g.RowWidget {
 			g.SetKeyboardFocusHere()
 			shouldFilterFocus = false
 		}
-		g.InputText(&filterText).Build()
+		g.InputText(&filterText).Flags(g.InputTextFlagsEnterReturnsTrue).OnChange(onChange).Build()
 		filterClues(&filterText)
 	},
 	),
@@ -141,6 +146,7 @@ func filterClues(filter *string) {
 }
 
 func loop() {
+
 	imgui.PushStyleVarVec2(imgui.StyleVarCellPadding, imgui.Vec2{1.0, 1.0})
 	imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{1.0, 1.0})
 	imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextPadding, imgui.Vec2{20.0, 0.0})
@@ -157,11 +163,18 @@ func loop() {
 			langSetupLayout(),
 		)
 	} else {
-		g.SingleWindow().Layout(
+		g.SingleWindow().Flags(
+			g.WindowFlags(imgui.WindowFlagsNoTitleBar)|
+				g.WindowFlags(imgui.WindowFlagsNoCollapse)|
+				g.WindowFlags(imgui.WindowFlagsNoScrollbar)|
+				g.WindowFlags(imgui.WindowFlagsNoMove)|
+				g.WindowFlags(imgui.WindowFlagsNoResize)|
+				g.WindowFlags(imgui.WindowFlagsNoNav),
+		).Layout(
 			titleLayout(),
 			headerLayout(),
 			g.Row(
-				g.Child().Size(115, 100).Layout(
+				g.Child().Flags(g.WindowFlagsNoNav).Size(115, 100).Layout(
 					g.Row(g.Custom(func() {
 						g.Dummy(22.0, 0).Build()
 						if curDir != ClueDirectionUp {
@@ -221,14 +234,31 @@ func loop() {
 						}
 					})),
 				),
-				g.Child().Size(-1, 100).Layout(
-					g.Custom(func() {
-						g.ListBox(curFilteredClues).SelectedIndex(&curSelectedIndex).Build()
-						if len(curFilteredClues) > int(curSelectedIndex) {
-							curSelectedClue = curFilteredClues[curSelectedIndex]
+				g.Custom(func() {
+					if shouldListboxFocus {
+						imgui.SetNextWindowFocus()
+						shouldListboxFocus = false
+					} else {
+						if g.IsKeyPressed(g.KeyEscape) {
+							shouldFilterFocus = true
 						}
-					}),
-				),
+					}
+					onChange := func(selectedIndex int) {
+						if g.IsKeyPressed(g.KeyEnter) {
+							curSelectedIndex = int32(selectedIndex)
+							if len(curFilteredClues) > int(selectedIndex) {
+								curSelectedClue = curFilteredClues[selectedIndex]
+							}
+							TravelNextClue()
+						}
+					}
+					g.ListBox(curFilteredClues).Size(-1, 100).OnChange(onChange).SelectedIndex(&curSelectedIndex).Build()
+					if len(curFilteredClues) > int(curSelectedIndex) {
+						curSelectedClue = curFilteredClues[curSelectedIndex]
+					} else {
+						curSelectedIndex = 0
+					}
+				}),
 			),
 			g.Row(g.Custom(func() {
 				imgui.SeparatorText("History")
