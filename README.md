@@ -5,15 +5,10 @@ depending on dofusdb closed datas
 
 -----
 
-## Demos
 [dofhunt.webm](https://github.com/user-attachments/assets/0b323ced-9469-4675-82e9-8432f80b1db7)
 
-(a bit old)
-[![DofHunt](https://img.youtube.com/vi/Pcuv9M-DRMM/0.jpg)](https://www.youtube.com/watch?v=Pcuv9M-DRMM)
-
 ## Multilang support
-* added in alpha 0.6
-* ![image](https://github.com/user-attachments/assets/7743de2e-9be4-44c1-bff5-995b349d25b6)
+![image](https://github.com/user-attachments/assets/7743de2e-9be4-44c1-bff5-995b349d25b6)
 
 ## Install
 * Download latest release https://github.com/cjbrigato/dofhunt/releases/latest
@@ -26,4 +21,8 @@ depending on dofusdb closed datas
 * Depends on GIU https://github.com/AllenDang/giu so requirements are same
 * https://github.com/AllenDang/giu?tab=readme-ov-file#windows
 * then `go build -ldflags -H=windowsgui`
+
+## old long demo
+(a bit old)
+[![DofHunt](https://img.youtube.com/vi/Pcuv9M-DRMM/0.jpg)](https://www.youtube.com/watch?v=Pcuv9M-DRMM)
 
