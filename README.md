@@ -15,7 +15,7 @@ depending on dofusdb closed datas
 * Just run the executable, it is now all standalone
 
 ## Windows
-* https://github.com/cjbrigato/dofhunt/releases/download/alpha-0.10-ui-sugar/dofhunt-win64.exe
+* https://github.com/cjbrigato/dofhunt/releases/download/alpha-0.11-hide-history/dofhunt-win64.exe
 
 ## building
 * Depends on GIU https://github.com/AllenDang/giu so requirements are same
