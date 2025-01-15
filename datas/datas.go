@@ -1,4 +1,4 @@
-package main
+package datas
 
 import (
 	_ "embed"
@@ -61,7 +61,7 @@ func GetDatas(countryCode string) {
 		name := value.Get(langKey).String()
 		name = NormalizeString(countryCode, name, true)
 		ClueNamesMap[id] = name
-		return true 
+		return true
 	})
 	log.Println("Loaded ClueNames")
 }

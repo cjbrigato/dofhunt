@@ -1,10 +1,11 @@
-package main
+package language
 
 import (
 	"strings"
 
 	"github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"
+	"github.com/cjbrigato/dofhunt/datas"
 )
 
 var AppSupportedLanguages = NewSupportedLanguagesCollection(SupportedLanguages)
@@ -77,7 +78,7 @@ func (slc *SupportedLanguagesCollection) LangSetupLayout(initialized *bool) *g.R
 		imgui.PushStyleVarVec2(imgui.StyleVarSelectableTextAlign, imgui.Vec2{0.5, 0.0})
 		g.ListBox(slc.Langs()).Size(-1, 100).SelectedIndex(slc.SelectedIndex()).OnChange(func(idx int) {
 			langs := slc.Langs()
-			GetDatas(slc.CountryCode(langs[idx]))
+			datas.GetDatas(slc.CountryCode(langs[idx]))
 			*initialized = true
 		}).Build()
 		imgui.PopStyleVar()

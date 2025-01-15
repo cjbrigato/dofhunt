@@ -1,4 +1,4 @@
-package main
+package types
 
 import (
 	"fmt"
@@ -6,11 +6,6 @@ import (
 
 	g "github.com/AllenDang/giu"
 )
-
-type MapPosition struct {
-	X int
-	Y int
-}
 
 type ClueDirection int
 
@@ -83,69 +78,7 @@ func (crs ClueResultSet) Pos(p string) (*MapPosition, error) {
 	return &pos, nil
 }
 
-func (m *MapPosition) TravelCommand() string {
-	return fmt.Sprintf("/travel %d %d", m.X, m.Y)
-}
-
-func (m *MapPosition) DirectedMapPositionsSet(dir ClueDirection) []MapPosition {
-	return directedMapPositions(*m, dir, 10)
-}
-
-func (m *MapPosition) GetClueNames() []string {
-	clues, ok := CluesPosMap[m.X][m.Y]
-	if !ok {
-		return nil
-	}
-	names := make([]string, 0)
-	for _, clue := range clues {
-		names = append(names, ClueNamesMap[clue])
-	}
-	return names
-}
-
-func (m *MapPosition) FindNextClue(dir ClueDirection) ClueResultSet {
-	return getClueResultSet(*m, dir, 10)
-}
-
-func directedMapPositions(start MapPosition, dir ClueDirection, limit int) []MapPosition {
-	if limit < 1 {
-		return nil
-	}
-	results := make([]MapPosition, 0)
-	switch dir {
-	case ClueDirectionRight:
-		for i := 1; i <= limit; i++ {
-			results = append(results, MapPosition{
-				X: start.X + i,
-				Y: start.Y,
-			})
-		}
-	case ClueDirectionLeft:
-		for i := 1; i <= limit; i++ {
-			results = append(results, MapPosition{
-				X: start.X - i,
-				Y: start.Y,
-			})
-		}
-	case ClueDirectionUp:
-		for i := 1; i <= limit; i++ {
-			results = append(results, MapPosition{
-				X: start.X,
-				Y: start.Y - i,
-			})
-		}
-	case ClueDirectionDown:
-		for i := 1; i <= limit; i++ {
-			results = append(results, MapPosition{
-				X: start.X,
-				Y: start.Y + i,
-			})
-		}
-	}
-	return results
-}
-
-func getClueResultSet(start MapPosition, dir ClueDirection, limit int) ClueResultSet {
+func GetClueResultSet(start MapPosition, dir ClueDirection, limit int) ClueResultSet {
 	results := make(ClueResultSet)
 	positions := directedMapPositions(start, dir, limit)
 	for _, position := range positions {

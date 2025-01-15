@@ -8,6 +8,11 @@ import (
 
 	"github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"
+	"github.com/cjbrigato/dofhunt/datas"
+	"github.com/cjbrigato/dofhunt/language"
+	"github.com/cjbrigato/dofhunt/types"
+	"github.com/cjbrigato/dofhunt/ui"
+	"github.com/cjbrigato/dofhunt/winres"
 )
 
 const (
@@ -22,19 +27,19 @@ const (
 var (
 	curPosX            = int32(0)
 	curPosY            = int32(0)
-	curDir             = ClueDirectionNone
+	curDir             = types.ClueDirectionNone
 	curClues           = []string{}
 	curFilteredClues   = []string{}
 	curSelectedClue    = SELECTED_CLUE_RESET
 	canConfirm         = false
-	curResultSet       = ClueResultSet{}
+	curResultSet       = types.ClueResultSet{}
 	lastPosX           = curPosX
 	lastPosY           = curPosY
 	curSelectedIndex   = int32(-1)
 	filterText         = ""
 	wnd                *g.MasterWindow
 	isMovingFrame      = false
-	language           = "fr"
+	lang               = "fr"
 	initialized        = false
 	shouldFilterFocus  = false
 	shouldListboxFocus = false
@@ -42,8 +47,8 @@ var (
 )
 
 func titleBarLayout() *g.CustomWidget {
-	return framelessWindowMoveWidget(g.Custom(func() {
-		icon16Texture.ToImageWidget().Scale(0.75, 0.75).Build()
+	return ui.FramelessWindowMoveWidget(g.Custom(func() {
+		winres.Icon16Texture.ToImageWidget().Scale(0.75, 0.75).Build()
 		imgui.SameLine()
 		imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{0.0, 1.0})
 		imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextPadding, imgui.Vec2{20.0, 2.0})
@@ -77,7 +82,7 @@ func filterClues(filter *string) {
 	if *filter != "" && len(curClues) > 0 {
 		curFilteredClues = []string{}
 		for _, clue := range curClues {
-			if strings.Contains(strings.ToLower(clue), NormalizeString(language, *filter, true)) {
+			if strings.Contains(strings.ToLower(clue), datas.NormalizeString(lang, *filter, true)) {
 				curFilteredClues = append(curFilteredClues, clue)
 			}
 		}
@@ -89,11 +94,11 @@ func filterClues(filter *string) {
 func setupPageWindowLayout() []g.Widget {
 	return append(make([]g.Widget, 0),
 		g.Dummy(-1, 5),
-		framelessWindowMoveWidget(splashTexture.ToImageWidget(), &isMovingFrame, wnd),
+		ui.FramelessWindowMoveWidget(winres.SplashTexture.ToImageWidget(), &isMovingFrame, wnd),
 		g.Custom(func() {
 			imgui.SeparatorText("Hunt Smarter")
 		}),
-		AppSupportedLanguages.LangSetupLayout(&initialized),
+		language.AppSupportedLanguages.LangSetupLayout(&initialized),
 	)
 }
 
@@ -136,10 +141,10 @@ func directionPadChildLayout() *g.ChildWidget {
 	return g.Child().Flags(g.WindowFlagsNoNav).Size(115, 100).Layout(
 		g.Row(g.Custom(func() {
 			g.Dummy(22.0, 0).Build()
-			if curDir != ClueDirectionUp {
+			if curDir != types.ClueDirectionUp {
 				imgui.SameLine()
 				g.ArrowButton(g.DirectionUp).OnClick(func() {
-					curDir = ClueDirectionUp
+					curDir = types.ClueDirectionUp
 					UpdateClues()
 				}).Build()
 			} else {
@@ -147,16 +152,16 @@ func directionPadChildLayout() *g.ChildWidget {
 			}
 		})),
 		g.Row(g.Custom(func() {
-			if curDir != ClueDirectionLeft {
+			if curDir != types.ClueDirectionLeft {
 				g.ArrowButton(g.DirectionLeft).OnClick(func() {
-					curDir = ClueDirectionLeft
+					curDir = types.ClueDirectionLeft
 					UpdateClues()
 				}).Build()
 			} else {
 				g.Dummy(22.0, 0).Build()
 			}
 			imgui.SameLine()
-			if curDir != ClueDirectionNone {
+			if curDir != types.ClueDirectionNone {
 				g.Button("    ").OnClick(func() {
 					ResetClues(SELECTED_CLUE_RESET)
 				}).Build()
@@ -164,9 +169,9 @@ func directionPadChildLayout() *g.ChildWidget {
 				g.Dummy(21.0, 0).Build()
 			}
 			imgui.SameLine()
-			if curDir != ClueDirectionRight {
+			if curDir != types.ClueDirectionRight {
 				g.ArrowButton(g.DirectionRight).OnClick(func() {
-					curDir = ClueDirectionRight
+					curDir = types.ClueDirectionRight
 					UpdateClues()
 				}).Build()
 			} else {
@@ -175,10 +180,10 @@ func directionPadChildLayout() *g.ChildWidget {
 		})),
 		g.Row(g.Custom(func() {
 			g.Dummy(22.0, 0).Build()
-			if curDir != ClueDirectionDown {
+			if curDir != types.ClueDirectionDown {
 				imgui.SameLine()
 				g.ArrowButton(g.DirectionDown).OnClick(func() {
-					curDir = ClueDirectionDown
+					curDir = types.ClueDirectionDown
 					UpdateClues()
 				}).Build()
 			} else {
@@ -234,7 +239,7 @@ func loop() {
 					directionPadChildLayout(),
 					clueResultsListboxLayout(),
 				),
-				TravelHistory.HistoryLayout(wnd),
+				ui.TravelHistory.HistoryLayout(wnd),
 			)
 		}
 		if lastPosX != curPosX || lastPosY != curPosY {
@@ -246,7 +251,7 @@ func loop() {
 }
 
 func UpdateClues() {
-	curResultSet = getClueResultSet(MapPosition{
+	curResultSet = types.GetClueResultSet(types.MapPosition{
 		X: int(curPosX),
 		Y: int(curPosY),
 	}, curDir, 10)
@@ -262,10 +267,10 @@ func UpdateClues() {
 }
 
 func ResetClues(message string) {
-	curDir = ClueDirectionNone
+	curDir = types.ClueDirectionNone
 	curClues = []string{}
 	curSelectedClue = message
-	curResultSet = ClueResultSet{}
+	curResultSet = types.ClueResultSet{}
 	canConfirm = false
 }
 
@@ -280,10 +285,10 @@ func TravelNextClue() {
 	imgui.LogToClipboard()
 	imgui.LogText(travel)
 	imgui.LogFinish()
-	TravelHistory.AddEntry(MapPosition{
+	ui.TravelHistory.AddEntry(types.MapPosition{
 		X: int(curPosX),
 		Y: int(curPosY),
-	}, curDir, curSelectedClue, MapPosition{
+	}, curDir, curSelectedClue, types.MapPosition{
 		X: pos.X,
 		Y: pos.Y,
 	})
@@ -297,7 +302,7 @@ func main() {
 	wnd = g.NewMasterWindow("DofHunt", 380, 273, g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFrameless|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent) //g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent)
 	wnd.SetTargetFPS(60)
 	wnd.SetBgColor(color.RGBA{0, 0, 0, 0})
-	initTextures()
+	winres.InitTextures()
 	wnd.SetPos(300, 300)
 	wnd.Run(loop)
 

@@ -1,4 +1,4 @@
-package main
+package winres
 
 import (
 	"bytes"
@@ -14,8 +14,8 @@ var (
 	rgbaIcon16       *image.RGBA
 	rgbaIcon         *image.RGBA
 	headerSplashRgba *image.RGBA
-	splashTexture    = &g.ReflectiveBoundTexture{}
-	icon16Texture    = &g.ReflectiveBoundTexture{}
+	SplashTexture    = &g.ReflectiveBoundTexture{}
+	Icon16Texture    = &g.ReflectiveBoundTexture{}
 )
 
 func DecodeEmbedded(data []byte) (*image.RGBA, error) {
@@ -27,31 +27,31 @@ func DecodeEmbedded(data []byte) (*image.RGBA, error) {
 	return g.ImageToRgba(img), nil
 }
 
-//go:embed winres/splash.png
+//go:embed splash.png
 var splashHeaderLogo []byte
 
 func DecodeSplashHeaderLogo() (*image.RGBA, error) {
 	return DecodeEmbedded(splashHeaderLogo)
 }
 
-//go:embed winres/icon16.png
+//go:embed icon16.png
 var appIcon16 []byte
 
 func DecodeAppIcon16() (*image.RGBA, error) {
 	return DecodeEmbedded(appIcon16)
 }
 
-//go:embed winres/icon.png
+//go:embed0 icon.png
 var appIcon []byte
 
 func DecodeAppIcon() (*image.RGBA, error) {
 	return DecodeEmbedded(appIcon)
 }
 
-func initTextures() {
+func InitTextures() {
 	rgbaIcon, _ = DecodeAppIcon()
 	rgbaIcon16, _ = DecodeAppIcon16()
 	headerSplashRgba, _ := DecodeSplashHeaderLogo()
-	splashTexture.SetSurfaceFromRGBA(headerSplashRgba, false)
-	icon16Texture.SetSurfaceFromRGBA(rgbaIcon16, false)
+	SplashTexture.SetSurfaceFromRGBA(headerSplashRgba, false)
+	Icon16Texture.SetSurfaceFromRGBA(rgbaIcon16, false)
 }

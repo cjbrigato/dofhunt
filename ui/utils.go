@@ -1,11 +1,11 @@
-package main
+package ui
 
 import (
 	"github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"
 )
 
-func framelessWindowMoveWidget(widget g.Widget, isMovingFrame *bool, wnd *g.MasterWindow) *g.CustomWidget {
+func FramelessWindowMoveWidget(widget g.Widget, isMovingFrame *bool, wnd *g.MasterWindow) *g.CustomWidget {
 	return g.Custom(func() {
 		if *isMovingFrame && !g.IsMouseDown(g.MouseButtonLeft) {
 			*isMovingFrame = false

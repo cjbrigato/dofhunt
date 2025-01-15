@@ -1,17 +1,18 @@
-package main
+package ui
 
 import (
 	"fmt"
 
 	"github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"
+	"github.com/cjbrigato/dofhunt/types"
 )
 
 type TravelHistoryEntry struct {
-	From      MapPosition
-	Direction ClueDirection
+	From      types.MapPosition
+	Direction types.ClueDirection
 	ClueName  string
-	To        MapPosition
+	To        types.MapPosition
 }
 
 const (
@@ -38,7 +39,7 @@ func NewTravelHistoryCollection(max int) *TravelHistoryCollection {
 	}
 }
 
-func (t *TravelHistoryCollection) AddEntry(from MapPosition, dir ClueDirection, clue string, to MapPosition) {
+func (t *TravelHistoryCollection) AddEntry(from types.MapPosition, dir types.ClueDirection, clue string, to types.MapPosition) {
 	t.entries = append(t.entries, TravelHistoryEntry{
 		From:      from,
 		Direction: dir,
