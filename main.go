@@ -15,6 +15,8 @@ const (
 	SELECTED_CLUE_TRAVELED    = "[Choose NEXT -> Direction]"
 	SELECTED_CLUE_POS_CHANGED = "[Position Changed -> Set Direction]"
 	SELECTED_CLUE_NOTFOUND    = "(X_x) No clues. You messed up"
+	WND_BASE_WIDTH            = 380
+	WND_BASE_HEIGHT           = 267
 )
 
 var (
@@ -36,6 +38,7 @@ var (
 	initialized        = false
 	shouldFilterFocus  = false
 	shouldListboxFocus = false
+	showHistory        = true
 )
 
 func titleBarLayout() *g.CustomWidget {
@@ -231,7 +234,7 @@ func loop() {
 					directionPadChildLayout(),
 					clueResultsListboxLayout(),
 				),
-				TravelHistory.HistoryLayout(),
+				TravelHistory.HistoryLayout(wnd),
 			)
 		}
 		if lastPosX != curPosX || lastPosY != curPosY {
@@ -291,7 +294,7 @@ func TravelNextClue() {
 }
 
 func main() {
-	wnd = g.NewMasterWindow("DofHunt", 380, 267, g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFrameless|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent) //g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent)
+	wnd = g.NewMasterWindow("DofHunt", 380, 273, g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFrameless|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent) //g.MasterWindowFlagsNotResizable|g.MasterWindowFlagsFloating|g.MasterWindowFlagsTransparent)
 	wnd.SetTargetFPS(60)
 	wnd.SetBgColor(color.RGBA{0, 0, 0, 0})
 	initTextures()
