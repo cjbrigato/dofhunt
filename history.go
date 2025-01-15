@@ -19,16 +19,18 @@ const (
 )
 
 var (
-	TravelHistory = NewTravelHistoryCollection()
+	TravelHistory = NewTravelHistoryCollection(MaxTravelHistoryEntries)
 )
 
 type TravelHistoryCollection struct {
-	entries []TravelHistoryEntry
+	entries    []TravelHistoryEntry
+	maxEntries int
 }
 
-func NewTravelHistoryCollection() *TravelHistoryCollection {
+func NewTravelHistoryCollection(max int) *TravelHistoryCollection {
 	return &TravelHistoryCollection{
-		entries: make([]TravelHistoryEntry, 0),
+		entries:    make([]TravelHistoryEntry, 0),
+		maxEntries: max,
 	}
 }
 
@@ -39,8 +41,8 @@ func (t *TravelHistoryCollection) AddEntry(from MapPosition, dir ClueDirection, 
 		ClueName:  clue,
 		To:        to,
 	})
-	if len(t.entries) > MaxTravelHistoryEntries {
-		t.entries = t.entries[len(t.entries)-MaxTravelHistoryEntries:]
+	if len(t.entries) > t.maxEntries {
+		t.entries = t.entries[len(t.entries)-t.maxEntries:]
 	}
 }
 
@@ -58,7 +60,7 @@ func (t *TravelHistoryCollection) GenerateCurrentFileListTableRow() []*g.TableRo
 
 func (t *TravelHistoryCollection) Table() *g.CustomWidget {
 	return g.Custom(func() {
-		imgui.PushStyleVarVec2(imgui.StyleVarSelectableTextAlign, imgui.Vec2{1.0, 0.0})
+		imgui.PushStyleVarVec2(imgui.StyleVarSelectableTextAlign, imgui.Vec2{X: 1.0, Y: 0.0})
 		g.Table().NoHeader(true).Freeze(0, 1).Flags(g.TableFlagsRowBg).
 			Columns(
 				g.TableColumn("F[").Flags(g.TableColumnFlagsWidthFixed),
@@ -79,6 +81,23 @@ func (t *TravelHistoryCollection) Table() *g.CustomWidget {
 		imgui.PopStyleVar()
 	})
 }
+
+func (t *TravelHistoryCollection) HistoryLayout() g.Widget {
+	return g.Custom(func() {
+		g.Row(g.Custom(func() {
+			imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{1.0, 1.0})
+			imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextPadding, imgui.Vec2{20.0, 0.0})
+			imgui.SeparatorText("History")
+			imgui.PopStyleVarV(2)
+		})).Build()
+		g.Custom(func() {
+			if len(t.GetEntries()) > 0 {
+				t.Table().Build()
+			}
+		}).Build()
+	})
+}
+
 func (te *TravelHistoryEntry) TableRow() *g.TableRowWidget {
 	return g.TableRow(
 		g.Label("["),
