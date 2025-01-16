@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"image/color"
+
 	"github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"
 )
@@ -30,4 +32,22 @@ func FramelessWindowMoveWidget(widget g.Widget, isMovingFrame *bool, wnd *g.Mast
 			}
 		}
 	})
+}
+
+func WithUIStyle(fn func()) {
+	imgui.PushStyleVarVec2(imgui.StyleVarCellPadding, imgui.Vec2{1.0, 1.0})
+	imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{1.0, 1.0})
+	imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextPadding, imgui.Vec2{20.0, 0.0})
+	imgui.PushStyleVarFloat(imgui.StyleVarWindowBorderSize, 0)
+	imgui.PushStyleVarFloat(imgui.StyleVarWindowRounding, 6.0)
+	imgui.PushStyleVarFloat(imgui.StyleVarChildBorderSize, 0)
+	imgui.PushStyleColorVec4(imgui.ColChildBg, g.ToVec4Color(color.RGBA{50, 50, 70, 0}))
+	imgui.PushStyleColorVec4(imgui.ColButton, g.ToVec4Color(color.RGBA{50, 50, 70, 130}))
+	g.PushColorWindowBg(color.RGBA{50, 50, 70, 130})
+	g.PushColorFrameBg(color.RGBA{30, 30, 60, 110})
+
+	fn()
+
+	g.PopStyleColorV(4)
+	imgui.PopStyleVarV(6)
 }

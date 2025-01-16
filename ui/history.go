@@ -5,7 +5,7 @@ import (
 
 	"github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"
-	"github.com/cjbrigato/dofhunt/types"
+	"github.com/cjbrigato/dofhunt/datas/types"
 )
 
 type TravelHistoryEntry struct {
