@@ -7,8 +7,8 @@ import (
 )
 
 type MapPosition struct {
-	X int
-	Y int
+	X int32
+	Y int32
 }
 
 func (m *MapPosition) TravelCommand() string {
@@ -20,7 +20,7 @@ func (m *MapPosition) DirectedMapPositionsSet(dir ClueDirection) []MapPosition {
 }
 
 func (m *MapPosition) GetClueNames() []string {
-	clues, ok := datas.CluesPosMap[m.X][m.Y]
+	clues, ok := datas.CluesPosMap[int(m.X)][int(m.Y)]
 	if !ok {
 		return nil
 	}
@@ -42,28 +42,28 @@ func directedMapPositions(start MapPosition, dir ClueDirection, limit int) []Map
 	results := make([]MapPosition, 0)
 	switch dir {
 	case ClueDirectionRight:
-		for i := 1; i <= limit; i++ {
+		for i := int32(1); i <= int32(limit); i++ {
 			results = append(results, MapPosition{
 				X: start.X + i,
 				Y: start.Y,
 			})
 		}
 	case ClueDirectionLeft:
-		for i := 1; i <= limit; i++ {
+		for i := int32(1); i <= int32(limit); i++ {
 			results = append(results, MapPosition{
 				X: start.X - i,
 				Y: start.Y,
 			})
 		}
 	case ClueDirectionUp:
-		for i := 1; i <= limit; i++ {
+		for i := int32(1); i <= int32(limit); i++ {
 			results = append(results, MapPosition{
 				X: start.X,
 				Y: start.Y - i,
 			})
 		}
 	case ClueDirectionDown:
-		for i := 1; i <= limit; i++ {
+		for i := int32(1); i <= int32(limit); i++ {
 			results = append(results, MapPosition{
 				X: start.X,
 				Y: start.Y + i,

@@ -4,7 +4,6 @@ import (
 	"image/color"
 	"log"
 	"strings"
-	"unsafe"
 
 	"github.com/AllenDang/cimgui-go/imgui"
 	"github.com/AllenDang/cimgui-go/utils"
@@ -166,9 +165,9 @@ func (s *AppUIState) titleBarLayout() *g.CustomWidget {
 func (s *AppUIState) inputsLineLayout() *g.RowWidget {
 	return g.Row(g.Custom(func() {
 		imgui.PushItemWidth(40.0)
-		g.DragInt("X", (*int32)(unsafe.Pointer(&s.CurrentMapPosition.X)), -100, 150).Build()
+		g.DragInt("X", &s.CurrentMapPosition.X, -100, 150).Build()
 		imgui.SameLine()
-		g.DragInt("Y", (*int32)(unsafe.Pointer(&s.CurrentMapPosition.Y)), -100, 150).Build()
+		g.DragInt("Y", &s.CurrentMapPosition.Y, -100, 150).Build()
 		imgui.PopItemWidth()
 		imgui.SameLine()
 		if s.windowState.shouldFilterFocus {
