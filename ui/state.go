@@ -118,6 +118,9 @@ func colorPopup(ce *color.RGBA, fe g.ColorEditFlags) {
 				W: col[3],
 			})
 		}
+		if imgui.Button("Reset") {
+			*ce = settings.DefaultWindowBgColor
+		}
 
 		imgui.EndPopup()
 	}

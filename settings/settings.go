@@ -14,8 +14,8 @@ const (
 )
 
 var (
-	defaultWindowBgColor = color.RGBA{50, 50, 70, 130}
-	defaultFrameBgColor  = color.RGBA{30, 30, 60, 110}
+	DefaultWindowBgColor = color.RGBA{50, 50, 70, 130}
+	DefaultFrameBgColor  = color.RGBA{30, 30, 60, 110}
 	defaultWindowPosXY   = 300
 )
 
@@ -32,8 +32,8 @@ func NewDefaultAppSettings() *AppSettings {
 	return &AppSettings{
 		GameLangCode:   "",
 		ShowHistory:    true,
-		WindowColor:    defaultWindowBgColor,
-		FrameColor:     defaultFrameBgColor,
+		WindowColor:    DefaultWindowBgColor,
+		FrameColor:     DefaultFrameBgColor,
 		LastWindowPosX: defaultWindowPosXY,
 		LastWindowPosY: defaultWindowPosXY,
 	}
