@@ -1,11 +1,13 @@
 package ui
 
 import (
+	"image/color"
 	"log"
 	"strings"
 	"unsafe"
 
 	"github.com/AllenDang/cimgui-go/imgui"
+	"github.com/AllenDang/cimgui-go/utils"
 	g "github.com/AllenDang/giu"
 	"github.com/cjbrigato/dofhunt/datas"
 	"github.com/cjbrigato/dofhunt/datas/types"
@@ -13,6 +15,8 @@ import (
 	"github.com/cjbrigato/dofhunt/settings"
 	"github.com/cjbrigato/dofhunt/winres"
 )
+
+var pickerRefColor color.RGBA
 
 type CluesSelectablesState struct {
 	curClues         []string
@@ -44,9 +48,11 @@ type AppWindowState struct {
 }
 
 type AppUIState struct {
-	initialized  bool
-	gameLangCode string
-	windowState  *AppWindowState
+	initialized    bool
+	dirtyLangState bool
+	once           bool
+	gameLangCode   string
+	windowState    *AppWindowState
 
 	CurrentMapPosition types.MapPosition
 	LastMapPosition    types.MapPosition
@@ -59,9 +65,13 @@ type AppUIState struct {
 }
 
 func NewAppUIState(w *g.MasterWindow) *AppUIState {
+	settings := settings.InitSettings()
+	if settings.GameLangCode != "" {
+		language.AppSupportedLanguages.SetCountryCode(settings.GameLangCode)
+	}
 	return &AppUIState{
-
-		gameLangCode: "fr",
+		dirtyLangState: true,
+		gameLangCode:   "fr",
 		windowState: &AppWindowState{
 			wnd: w,
 		},
@@ -78,13 +88,45 @@ func NewAppUIState(w *g.MasterWindow) *AppUIState {
 			curSelectedClue:  "",
 			filterText:       "",
 		},
-		Settings: settings.InitSettings(),
+		Settings: settings,
+	}
+}
+
+func colorPopup(ce *color.RGBA, fe g.ColorEditFlags) {
+	p := g.ToVec4Color(pickerRefColor)
+	pcol := []float32{p.X, p.Y, p.Z, p.W}
+
+	if imgui.BeginPopup("Custom Color") {
+		c := g.ToVec4Color(*ce)
+		col := [4]float32{
+			c.X,
+			c.Y,
+			c.Z,
+			c.W,
+		}
+		refCol := pcol
+
+		if imgui.ColorPicker4V(
+			g.Context.FontAtlas.RegisterString("##COLOR_POPUP##me"),
+			&col,
+			imgui.ColorEditFlags(fe),
+			utils.SliceToPtr(refCol),
+		) {
+			*ce = g.Vec4ToRGBA(imgui.Vec4{
+				X: col[0],
+				Y: col[1],
+				Z: col[2],
+				W: col[3],
+			})
+		}
+
+		imgui.EndPopup()
 	}
 }
 
 func (s *AppUIState) titleBarLayout() *g.CustomWidget {
 	return g.Custom(func() {
-		FramelessWindowMoveWidget(g.Child().Size(340, 24).Layout(g.Custom(func() {
+		FramelessWindowMoveWidget(g.Child().Size(290, 24).Layout(g.Custom(func() {
 			winres.Icon16Texture.ToImageWidget().Scale(0.75, 0.75).Build()
 			imgui.SameLine()
 			imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{0.0, 1.0})
@@ -93,10 +135,29 @@ func (s *AppUIState) titleBarLayout() *g.CustomWidget {
 			imgui.PopStyleVarV(2)
 		}),
 		), &s.windowState.isMovingFrame, s.windowState.wnd).Build()
+
+		imgui.SameLine()
+		winres.ColorsTexture.ToImageWidget().Build()
+		if g.IsItemClicked(g.MouseButtonLeft) {
+			pickerRefColor = s.Settings.WindowColor
+			imgui.OpenPopupStr("Custom Color")
+		}
+		colorPopup(&s.Settings.WindowColor, g.ColorEditFlagsNone)
+
+		imgui.SameLine()
+		winres.LangTexture.ToImageWidget().Build()
+		if g.IsItemClicked(g.MouseButtonLeft) {
+			language.AppSupportedLanguages.ResetSelectedIndex()
+			language.AppSupportedLanguages.ResetCountryCode()
+			s.initialized = false
+			s.dirtyLangState = true
+		}
 		imgui.SameLine()
 		winres.CloseTexture.ToImageWidget().Build()
 		if g.IsItemClicked(g.MouseButtonLeft) {
+			s.Settings.SaveHistory()
 			s.Settings.SaveWindowPos(s.windowState.wnd)
+			s.Settings.SaveColors()
 			s.windowState.wnd.SetShouldClose(true)
 		}
 	})
@@ -124,6 +185,7 @@ func (s *AppUIState) inputsLineLayout() *g.RowWidget {
 }
 
 func (s *AppUIState) setupPageWindowLayout() []g.Widget {
+	s.windowState.wnd.SetSize(380, 273)
 	return append(make([]g.Widget, 0),
 		g.Dummy(-1, 5),
 		FramelessWindowMoveWidget(winres.SplashTexture.ToImageWidget(), &s.windowState.isMovingFrame, s.windowState.wnd),
@@ -131,6 +193,15 @@ func (s *AppUIState) setupPageWindowLayout() []g.Widget {
 			imgui.SeparatorText("Hunt Smarter")
 		}),
 		language.AppSupportedLanguages.LangSetupLayout(&s.initialized),
+		g.Custom(func() {
+			if s.initialized && !s.Settings.ShowHistory && s.once {
+				ox, oy := s.windowState.wnd.GetSize()
+				s.windowState.wnd.SetSize(ox, oy-70)
+			}
+			if !s.once {
+				s.once = true
+			}
+		}),
 	)
 }
 
@@ -281,6 +352,12 @@ func (s *AppUIState) Loop() {
 				s.setupPageWindowLayout()...,
 			)
 		} else {
+			if s.dirtyLangState {
+				s.Settings.GameLangCode = language.AppSupportedLanguages.GetCountryCode()
+				s.Settings.SaveGameLangCode()
+				s.UpdateClues()
+				s.dirtyLangState = false
+			}
 			g.SingleWindow().Flags(
 				g.WindowFlags(imgui.WindowFlagsNoTitleBar)|
 					g.WindowFlags(imgui.WindowFlagsNoCollapse)|

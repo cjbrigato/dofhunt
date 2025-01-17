@@ -39,10 +39,11 @@ type SupportedLanguage struct {
 }
 
 type SupportedLanguagesCollection struct {
-	supportedLanguages []SupportedLanguage
-	countryCodeNameMap map[string]string
-	nameCountryCodeMap map[string]string
-	selectedIndex      int32
+	supportedLanguages  []SupportedLanguage
+	countryCodeNameMap  map[string]string
+	nameCountryCodeMap  map[string]string
+	selectedIndex       int32
+	selectedCountryCode string
 }
 
 func (slc *SupportedLanguagesCollection) SelectedIndex() *int32 {
@@ -72,13 +73,35 @@ func (slc *SupportedLanguagesCollection) CountryCodes() []string {
 	return ccs
 }
 
+func (slc *SupportedLanguagesCollection) ResetSelectedIndex() {
+	slc.selectedIndex = -1
+}
+
+func (slc *SupportedLanguagesCollection) ResetCountryCode() {
+	slc.selectedCountryCode = ""
+}
+
+func (slc *SupportedLanguagesCollection) SetCountryCode(cc string) {
+	slc.selectedCountryCode = cc
+}
+
+func (slc *SupportedLanguagesCollection) GetCountryCode() string {
+	return slc.selectedCountryCode
+}
+
 func (slc *SupportedLanguagesCollection) LangSetupLayout(initialized *bool) *g.RowWidget {
 	return g.Row(g.Custom(func() {
+		if slc.selectedCountryCode != "" {
+			datas.GetDatas(slc.selectedCountryCode)
+			*initialized = true
+			return
+		}
 		g.Dummy(-1, 5).Build()
 		imgui.PushStyleVarVec2(imgui.StyleVarSelectableTextAlign, imgui.Vec2{0.5, 0.0})
 		g.ListBox(slc.Langs()).Size(-1, 100).SelectedIndex(slc.SelectedIndex()).OnChange(func(idx int) {
 			langs := slc.Langs()
-			datas.GetDatas(slc.CountryCode(langs[idx]))
+			slc.selectedCountryCode = slc.CountryCode(langs[idx])
+			datas.GetDatas(slc.selectedCountryCode)
 			*initialized = true
 		}).Build()
 		imgui.PopStyleVar()

@@ -95,9 +95,22 @@ func (a *AppSettings) Save() {
 	os.WriteFile(filePath(), settingsJson, 0666)
 }
 
+func (a *AppSettings) SaveColors() {
+	refSettings, _ := load()
+	refSettings.WindowColor = a.WindowColor
+	refSettings.FrameColor = a.FrameColor
+	refSettings.Save()
+}
+
 func (a *AppSettings) SaveHistory() {
 	refSettings, _ := load()
 	refSettings.ShowHistory = a.ShowHistory
+	refSettings.Save()
+}
+
+func (a *AppSettings) SaveGameLangCode() {
+	refSettings, _ := load()
+	refSettings.GameLangCode = a.GameLangCode
 	refSettings.Save()
 }
 
