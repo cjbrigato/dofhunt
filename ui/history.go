@@ -26,7 +26,6 @@ var (
 type TravelHistoryCollection struct {
 	entries         []TravelHistoryEntry
 	maxEntries      int
-	showHistory     bool
 	lastShowHistory bool
 }
 
@@ -34,7 +33,6 @@ func NewTravelHistoryCollection(max int) *TravelHistoryCollection {
 	return &TravelHistoryCollection{
 		entries:         make([]TravelHistoryEntry, 0),
 		maxEntries:      max,
-		showHistory:     true,
 		lastShowHistory: true,
 	}
 }
@@ -87,27 +85,28 @@ func (t *TravelHistoryCollection) Table() *g.CustomWidget {
 	})
 }
 
-func (t *TravelHistoryCollection) HistoryLayout(w *g.MasterWindow) g.Widget {
+func (t *TravelHistoryCollection) HistoryLayout(w *g.MasterWindow, showHistory *bool, historyStateSaveFunc func()) g.Widget {
 	return g.Custom(func() {
 		g.Row(g.Custom(func() {
 			imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{1.0, 1.0})
 			imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextPadding, imgui.Vec2{20.0, 0.0})
-			imgui.Checkbox("##shhist", &t.showHistory)
+			imgui.Checkbox("##shhist", showHistory)
 			imgui.SameLine()
 			imgui.SeparatorText("History")
 			imgui.PopStyleVarV(2)
 		})).Build()
-		if t.showHistory != t.lastShowHistory {
+		if *showHistory != t.lastShowHistory {
+			historyStateSaveFunc()
 			ox, oy := w.GetSize()
 			if t.lastShowHistory {
 				w.SetSize(ox, oy-70)
 			} else {
 				w.SetSize(ox, oy+70)
 			}
-			t.lastShowHistory = t.showHistory
+			t.lastShowHistory = *showHistory
 		}
 
-		if t.showHistory {
+		if *showHistory {
 			g.Custom(func() {
 				if len(t.GetEntries()) > 0 {
 					t.Table().Build()

@@ -15,7 +15,7 @@ const (
 	SELECTED_CLUE_POS_CHANGED = "[Position Changed -> Set Direction]"
 	SELECTED_CLUE_NOTFOUND    = "(X_x) No clues. You messed up"
 	WND_BASE_WIDTH            = 380
-	WND_BASE_HEIGHT           = 267
+	WND_BASE_HEIGHT           = 273
 )
 
 var uiState *ui.AppUIState
@@ -25,8 +25,8 @@ func main() {
 	wnd.SetTargetFPS(60)
 	wnd.SetBgColor(color.RGBA{0, 0, 0, 0})
 	winres.InitTextures()
-	wnd.SetPos(300, 300)
 	uiState = ui.NewAppUIState(wnd)
+	wnd.SetPos(uiState.Settings.LastWindowPosX, uiState.Settings.LastWindowPosY)
 	wnd.Run(uiState.Loop)
 
 }

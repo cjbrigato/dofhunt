@@ -11,11 +11,13 @@ import (
 )
 
 var (
+	rgbaCloseIcon    *image.RGBA
 	rgbaIcon16       *image.RGBA
 	rgbaIcon         *image.RGBA
 	headerSplashRgba *image.RGBA
 	SplashTexture    = &g.ReflectiveBoundTexture{}
 	Icon16Texture    = &g.ReflectiveBoundTexture{}
+	CloseTexture     = &g.ReflectiveBoundTexture{}
 )
 
 func DecodeEmbedded(data []byte) (*image.RGBA, error) {
@@ -25,6 +27,13 @@ func DecodeEmbedded(data []byte) (*image.RGBA, error) {
 		return nil, fmt.Errorf("LoadImage: error decoding png image: %w", err)
 	}
 	return g.ImageToRgba(img), nil
+}
+
+//go:embed close.png
+var closeIcon []byte
+
+func DecodeCloseIcon() (*image.RGBA, error) {
+	return DecodeEmbedded(closeIcon)
 }
 
 //go:embed splash.png
@@ -52,6 +61,8 @@ func InitTextures() {
 	rgbaIcon, _ = DecodeAppIcon()
 	rgbaIcon16, _ = DecodeAppIcon16()
 	headerSplashRgba, _ := DecodeSplashHeaderLogo()
+	rgbaCloseIcon, _ := DecodeCloseIcon()
 	SplashTexture.SetSurfaceFromRGBA(headerSplashRgba, false)
 	Icon16Texture.SetSurfaceFromRGBA(rgbaIcon16, false)
+	CloseTexture.SetSurfaceFromRGBA(rgbaCloseIcon, false)
 }

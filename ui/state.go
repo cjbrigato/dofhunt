@@ -10,6 +10,7 @@ import (
 	"github.com/cjbrigato/dofhunt/datas"
 	"github.com/cjbrigato/dofhunt/datas/types"
 	"github.com/cjbrigato/dofhunt/language"
+	"github.com/cjbrigato/dofhunt/settings"
 	"github.com/cjbrigato/dofhunt/winres"
 )
 
@@ -53,6 +54,8 @@ type AppUIState struct {
 
 	CurrentClues types.ClueResultSet
 	CluesState   *CluesSelectablesState
+
+	Settings *settings.AppSettings
 }
 
 func NewAppUIState(w *g.MasterWindow) *AppUIState {
@@ -75,18 +78,28 @@ func NewAppUIState(w *g.MasterWindow) *AppUIState {
 			curSelectedClue:  "",
 			filterText:       "",
 		},
+		Settings: settings.InitSettings(),
 	}
 }
 
 func (s *AppUIState) titleBarLayout() *g.CustomWidget {
-	return FramelessWindowMoveWidget(g.Custom(func() {
-		winres.Icon16Texture.ToImageWidget().Scale(0.75, 0.75).Build()
+	return g.Custom(func() {
+		FramelessWindowMoveWidget(g.Child().Size(340, 24).Layout(g.Custom(func() {
+			winres.Icon16Texture.ToImageWidget().Scale(0.75, 0.75).Build()
+			imgui.SameLine()
+			imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{0.0, 1.0})
+			imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextPadding, imgui.Vec2{20.0, 2.0})
+			imgui.SeparatorText("DofHunt")
+			imgui.PopStyleVarV(2)
+		}),
+		), &s.windowState.isMovingFrame, s.windowState.wnd).Build()
 		imgui.SameLine()
-		imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{0.0, 1.0})
-		imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextPadding, imgui.Vec2{20.0, 2.0})
-		imgui.SeparatorText("DofHunt")
-		imgui.PopStyleVarV(2)
-	}), &s.windowState.isMovingFrame, s.windowState.wnd)
+		winres.CloseTexture.ToImageWidget().Build()
+		if g.IsItemClicked(g.MouseButtonLeft) {
+			s.Settings.SaveWindowPos(s.windowState.wnd)
+			s.windowState.wnd.SetShouldClose(true)
+		}
+	})
 }
 
 func (s *AppUIState) inputsLineLayout() *g.RowWidget {
@@ -282,7 +295,7 @@ func (s *AppUIState) Loop() {
 					s.directionPadChildLayout(),
 					s.clueResultsListboxLayout(),
 				),
-				TravelHistory.HistoryLayout(s.windowState.wnd),
+				TravelHistory.HistoryLayout(s.windowState.wnd, &s.Settings.ShowHistory, s.Settings.SaveHistory),
 			)
 		}
 		if s.LastMapPosition.X != s.CurrentMapPosition.X || s.LastMapPosition.Y != s.CurrentMapPosition.Y {
@@ -290,5 +303,5 @@ func (s *AppUIState) Loop() {
 		}
 		s.LastMapPosition.X = s.CurrentMapPosition.X
 		s.LastMapPosition.Y = s.CurrentMapPosition.Y
-	})
+	}, s.Settings)
 }
