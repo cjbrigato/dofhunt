@@ -15,7 +15,7 @@ const (
 
 var (
 	DefaultWindowBgColor = color.RGBA{50, 50, 70, 130}
-	DefaultFrameBgColor  = color.RGBA{30, 30, 60, 110}
+	DefaultTextColor     = color.RGBA{242, 245, 250, 255}
 	defaultWindowPosXY   = 300
 )
 
@@ -23,7 +23,7 @@ type AppSettings struct {
 	GameLangCode   string
 	ShowHistory    bool
 	WindowColor    color.RGBA
-	FrameColor     color.RGBA
+	TextColor      color.RGBA
 	LastWindowPosX int
 	LastWindowPosY int
 }
@@ -33,7 +33,7 @@ func NewDefaultAppSettings() *AppSettings {
 		GameLangCode:   "",
 		ShowHistory:    true,
 		WindowColor:    DefaultWindowBgColor,
-		FrameColor:     DefaultFrameBgColor,
+		TextColor:      DefaultTextColor,
 		LastWindowPosX: defaultWindowPosXY,
 		LastWindowPosY: defaultWindowPosXY,
 	}
@@ -80,7 +80,7 @@ func load() (*AppSettings, bool) {
 }
 
 func (a *AppSettings) ResetColors(from *AppSettings) {
-	a.FrameColor = from.FrameColor
+	a.TextColor = from.TextColor
 	a.WindowColor = from.WindowColor
 }
 
@@ -98,7 +98,7 @@ func (a *AppSettings) Save() {
 func (a *AppSettings) SaveColors() {
 	refSettings, _ := load()
 	refSettings.WindowColor = a.WindowColor
-	refSettings.FrameColor = a.FrameColor
+	refSettings.TextColor = a.TextColor
 	refSettings.Save()
 }
 

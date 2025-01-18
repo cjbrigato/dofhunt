@@ -45,10 +45,11 @@ func WithUIStyle(fn func(), settings *settings.AppSettings) {
 	imgui.PushStyleColorVec4(imgui.ColChildBg, g.ToVec4Color(color.RGBA{50, 50, 70, 0}))
 	imgui.PushStyleColorVec4(imgui.ColButton, g.ToVec4Color(color.RGBA{50, 50, 70, 130}))
 	g.PushColorWindowBg(settings.WindowColor)
-	g.PushColorFrameBg(settings.FrameColor)
+	g.PushColorFrameBg(color.RGBA{30, 30, 60, 110})
+	g.PushColorText(settings.TextColor)
 
 	fn()
 
-	g.PopStyleColorV(4)
+	g.PopStyleColorV(5)
 	imgui.PopStyleVarV(6)
 }

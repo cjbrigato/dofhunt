@@ -91,11 +91,11 @@ func NewAppUIState(w *g.MasterWindow) *AppUIState {
 	}
 }
 
-func colorPopup(ce *color.RGBA, fe g.ColorEditFlags) {
+func windowBgColorPopup(ce *color.RGBA, fe g.ColorEditFlags) {
 	p := g.ToVec4Color(pickerRefColor)
 	pcol := []float32{p.X, p.Y, p.Z, p.W}
 
-	if imgui.BeginPopup("Custom Color") {
+	if imgui.BeginPopup("Window Color") {
 		c := g.ToVec4Color(*ce)
 		col := [4]float32{
 			c.X,
@@ -106,7 +106,7 @@ func colorPopup(ce *color.RGBA, fe g.ColorEditFlags) {
 		refCol := pcol
 
 		if imgui.ColorPicker4V(
-			g.Context.FontAtlas.RegisterString("##COLOR_POPUP##me"),
+			g.Context.FontAtlas.RegisterString("##COLOR_POPUP_WINDOW##me"),
 			&col,
 			imgui.ColorEditFlags(fe),
 			utils.SliceToPtr(refCol),
@@ -126,9 +126,44 @@ func colorPopup(ce *color.RGBA, fe g.ColorEditFlags) {
 	}
 }
 
+func TextColorPopup(ce *color.RGBA, fe g.ColorEditFlags) {
+	p := g.ToVec4Color(pickerRefColor)
+	pcol := []float32{p.X, p.Y, p.Z, p.W}
+
+	if imgui.BeginPopup("Text Color") {
+		c := g.ToVec4Color(*ce)
+		col := [4]float32{
+			c.X,
+			c.Y,
+			c.Z,
+			c.W,
+		}
+		refCol := pcol
+
+		if imgui.ColorPicker4V(
+			g.Context.FontAtlas.RegisterString("##COLOR_POPUP_TEXT##me"),
+			&col,
+			imgui.ColorEditFlags(fe),
+			utils.SliceToPtr(refCol),
+		) {
+			*ce = g.Vec4ToRGBA(imgui.Vec4{
+				X: col[0],
+				Y: col[1],
+				Z: col[2],
+				W: col[3],
+			})
+		}
+		if imgui.Button("Reset") {
+			*ce = settings.DefaultTextColor
+		}
+
+		imgui.EndPopup()
+	}
+}
+
 func (s *AppUIState) titleBarLayout() *g.CustomWidget {
 	return g.Custom(func() {
-		FramelessWindowMoveWidget(g.Child().Size(290, 24).Layout(g.Custom(func() {
+		FramelessWindowMoveWidget(g.Child().Size(256, 24).Layout(g.Custom(func() {
 			winres.Icon16Texture.ToImageWidget().Scale(0.75, 0.75).Build()
 			imgui.SameLine()
 			imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{0.0, 1.0})
@@ -137,14 +172,20 @@ func (s *AppUIState) titleBarLayout() *g.CustomWidget {
 			imgui.PopStyleVarV(2)
 		}),
 		), &s.windowState.isMovingFrame, s.windowState.wnd).Build()
-
+		imgui.SameLine()
+		winres.TextTexture.ToImageWidget().Build()
+		if g.IsItemClicked(g.MouseButtonLeft) {
+			pickerRefColor = s.Settings.WindowColor
+			imgui.OpenPopupStr("Text Color")
+		}
+		TextColorPopup(&s.Settings.TextColor, g.ColorEditFlagsNone)
 		imgui.SameLine()
 		winres.ColorsTexture.ToImageWidget().Build()
 		if g.IsItemClicked(g.MouseButtonLeft) {
 			pickerRefColor = s.Settings.WindowColor
-			imgui.OpenPopupStr("Custom Color")
+			imgui.OpenPopupStr("Window Color")
 		}
-		colorPopup(&s.Settings.WindowColor, g.ColorEditFlagsNone)
+		windowBgColorPopup(&s.Settings.WindowColor, g.ColorEditFlagsNone)
 
 		imgui.SameLine()
 		winres.LangTexture.ToImageWidget().Build()
@@ -348,6 +389,7 @@ func (s *AppUIState) directionPadChildLayout() *g.ChildWidget {
 }
 
 func (s *AppUIState) Loop() {
+	imgui.ShowDemoWindow()
 	WithUIStyle(func() {
 		if !s.initialized {
 			g.SingleWindow().Layout(
