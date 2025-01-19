@@ -10,6 +10,7 @@ import (
 	g "github.com/AllenDang/giu"
 	"github.com/cjbrigato/dofhunt/datas"
 	"github.com/cjbrigato/dofhunt/datas/types"
+	"github.com/cjbrigato/dofhunt/dpi"
 	"github.com/cjbrigato/dofhunt/language"
 	"github.com/cjbrigato/dofhunt/settings"
 	"github.com/cjbrigato/dofhunt/winres"
@@ -163,7 +164,7 @@ func TextColorPopup(ce *color.RGBA, fe g.ColorEditFlags) {
 
 func (s *AppUIState) titleBarLayout() *g.CustomWidget {
 	return g.Custom(func() {
-		FramelessWindowMoveWidget(g.Child().Size(256, 24).Layout(g.Custom(func() {
+		FramelessWindowMoveWidget(g.Child().Size(dpi.Scaledf32(256), dpi.Scaledf32(24)).Layout(g.Custom(func() {
 			winres.Icon16Texture.ToImageWidget().Scale(0.75, 0.75).Build()
 			imgui.SameLine()
 			imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{0.0, 1.0})
@@ -228,7 +229,7 @@ func (s *AppUIState) inputsLineLayout() *g.RowWidget {
 }
 
 func (s *AppUIState) setupPageWindowLayout() []g.Widget {
-	s.windowState.wnd.SetSize(380, 273)
+	s.windowState.wnd.SetSize(dpi.Scaledi(380), dpi.Scaledi(273))
 	return append(make([]g.Widget, 0),
 		g.Dummy(-1, 5),
 		FramelessWindowMoveWidget(winres.SplashTexture.ToImageWidget(), &s.windowState.isMovingFrame, s.windowState.wnd),
@@ -239,7 +240,7 @@ func (s *AppUIState) setupPageWindowLayout() []g.Widget {
 		g.Custom(func() {
 			if s.initialized && !s.Settings.ShowHistory && s.once {
 				ox, oy := s.windowState.wnd.GetSize()
-				s.windowState.wnd.SetSize(ox, oy-70)
+				s.windowState.wnd.SetSize(ox, oy-dpi.Scaledi(70))
 			}
 			if !s.once {
 				s.once = true
@@ -389,7 +390,6 @@ func (s *AppUIState) directionPadChildLayout() *g.ChildWidget {
 }
 
 func (s *AppUIState) Loop() {
-	imgui.ShowDemoWindow()
 	WithUIStyle(func() {
 		if !s.initialized {
 			g.SingleWindow().Layout(

@@ -6,6 +6,7 @@ import (
 	"github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"
 	"github.com/cjbrigato/dofhunt/datas/types"
+	"github.com/cjbrigato/dofhunt/dpi"
 )
 
 type TravelHistoryEntry struct {
@@ -99,9 +100,9 @@ func (t *TravelHistoryCollection) HistoryLayout(w *g.MasterWindow, showHistory *
 			historyStateSaveFunc()
 			ox, oy := w.GetSize()
 			if t.lastShowHistory {
-				w.SetSize(ox, oy-70)
+				w.SetSize(ox, oy-dpi.Scaledi(70))
 			} else {
-				w.SetSize(ox, oy+70)
+				w.SetSize(ox, oy+dpi.Scaledi(70))
 			}
 			t.lastShowHistory = *showHistory
 		}
