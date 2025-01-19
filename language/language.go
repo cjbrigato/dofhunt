@@ -6,6 +6,7 @@ import (
 	"github.com/AllenDang/cimgui-go/imgui"
 	g "github.com/AllenDang/giu"
 	"github.com/cjbrigato/dofhunt/datas"
+	"github.com/cjbrigato/dofhunt/dpi"
 )
 
 var AppSupportedLanguages = NewSupportedLanguagesCollection(SupportedLanguages)
@@ -98,7 +99,7 @@ func (slc *SupportedLanguagesCollection) LangSetupLayout(initialized *bool) *g.R
 		}
 		g.Dummy(-1, 5).Build()
 		imgui.PushStyleVarVec2(imgui.StyleVarSelectableTextAlign, imgui.Vec2{0.5, 0.0})
-		g.ListBox(slc.Langs()).Size(-1, 100).SelectedIndex(slc.SelectedIndex()).OnChange(func(idx int) {
+		g.ListBox(slc.Langs()).Size(-1, dpi.Scaledf32(100)).SelectedIndex(slc.SelectedIndex()).OnChange(func(idx int) {
 			langs := slc.Langs()
 			slc.selectedCountryCode = slc.CountryCode(langs[idx])
 			datas.GetDatas(slc.selectedCountryCode)

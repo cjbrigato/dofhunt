@@ -165,7 +165,7 @@ func TextColorPopup(ce *color.RGBA, fe g.ColorEditFlags) {
 func (s *AppUIState) titleBarLayout() *g.CustomWidget {
 	return g.Custom(func() {
 		FramelessWindowMoveWidget(g.Child().Size(dpi.Scaledf32(256), dpi.Scaledf32(24)).Layout(g.Custom(func() {
-			winres.Icon16Texture.ToImageWidget().Scale(0.75, 0.75).Build()
+			winres.Icon16Texture.ToImageWidget().Scale(dpi.Scaledf32(0.75), dpi.Scaledf32(0.75)).Build()
 			imgui.SameLine()
 			imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextAlign, imgui.Vec2{0.0, 1.0})
 			imgui.PushStyleVarVec2(imgui.StyleVarSeparatorTextPadding, imgui.Vec2{20.0, 2.0})
@@ -174,14 +174,14 @@ func (s *AppUIState) titleBarLayout() *g.CustomWidget {
 		}),
 		), &s.windowState.isMovingFrame, s.windowState.wnd).Build()
 		imgui.SameLine()
-		winres.TextTexture.ToImageWidget().Build()
+		winres.TextTexture.ToImageWidget().Scale(dpi.Scaledf32(1), dpi.Scaledf32(1)).Build()
 		if g.IsItemClicked(g.MouseButtonLeft) {
 			pickerRefColor = s.Settings.WindowColor
 			imgui.OpenPopupStr("Text Color")
 		}
 		TextColorPopup(&s.Settings.TextColor, g.ColorEditFlagsNone)
 		imgui.SameLine()
-		winres.ColorsTexture.ToImageWidget().Build()
+		winres.ColorsTexture.ToImageWidget().Scale(dpi.Scaledf32(1), dpi.Scaledf32(1)).Build()
 		if g.IsItemClicked(g.MouseButtonLeft) {
 			pickerRefColor = s.Settings.WindowColor
 			imgui.OpenPopupStr("Window Color")
@@ -189,7 +189,7 @@ func (s *AppUIState) titleBarLayout() *g.CustomWidget {
 		windowBgColorPopup(&s.Settings.WindowColor, g.ColorEditFlagsNone)
 
 		imgui.SameLine()
-		winres.LangTexture.ToImageWidget().Build()
+		winres.LangTexture.ToImageWidget().Scale(dpi.Scaledf32(1), dpi.Scaledf32(1)).Build()
 		if g.IsItemClicked(g.MouseButtonLeft) {
 			language.AppSupportedLanguages.ResetSelectedIndex()
 			language.AppSupportedLanguages.ResetCountryCode()
@@ -197,7 +197,7 @@ func (s *AppUIState) titleBarLayout() *g.CustomWidget {
 			s.dirtyLangState = true
 		}
 		imgui.SameLine()
-		winres.CloseTexture.ToImageWidget().Build()
+		winres.CloseTexture.ToImageWidget().Scale(dpi.Scaledf32(1), dpi.Scaledf32(1)).Build()
 		if g.IsItemClicked(g.MouseButtonLeft) {
 			s.Settings.SaveHistory()
 			s.Settings.SaveWindowPos(s.windowState.wnd)
@@ -209,7 +209,7 @@ func (s *AppUIState) titleBarLayout() *g.CustomWidget {
 
 func (s *AppUIState) inputsLineLayout() *g.RowWidget {
 	return g.Row(g.Custom(func() {
-		imgui.PushItemWidth(40.0)
+		imgui.PushItemWidth(dpi.Scaledf32(40.0))
 		g.DragInt("X", &s.CurrentMapPosition.X, -100, 150).Build()
 		imgui.SameLine()
 		g.DragInt("Y", &s.CurrentMapPosition.Y, -100, 150).Build()
@@ -232,7 +232,7 @@ func (s *AppUIState) setupPageWindowLayout() []g.Widget {
 	s.windowState.wnd.SetSize(dpi.Scaledi(380), dpi.Scaledi(273))
 	return append(make([]g.Widget, 0),
 		g.Dummy(-1, 5),
-		FramelessWindowMoveWidget(winres.SplashTexture.ToImageWidget(), &s.windowState.isMovingFrame, s.windowState.wnd),
+		FramelessWindowMoveWidget(winres.SplashTexture.ToImageWidget().Scale(dpi.Scaledf32(1), dpi.Scaledf32(1)), &s.windowState.isMovingFrame, s.windowState.wnd),
 		g.Custom(func() {
 			imgui.SeparatorText("Hunt Smarter")
 		}),
@@ -317,7 +317,7 @@ func (s *AppUIState) clueResultsListboxLayout() *g.CustomWidget {
 				s.TravelNextClue()
 			}
 		}
-		g.ListBox(s.CluesState.curFilteredClues).Size(-1, 100).OnChange(onChange).SelectedIndex(&s.CluesState.curSelectedIndex).OnDClick(onDclick).Build()
+		g.ListBox(s.CluesState.curFilteredClues).Size(-1, dpi.Scaledf32(100)).OnChange(onChange).SelectedIndex(&s.CluesState.curSelectedIndex).OnDClick(onDclick).Build()
 		if int(s.CluesState.curSelectedIndex) >= 0 && len(s.CluesState.curFilteredClues) > int(s.CluesState.curSelectedIndex) {
 			s.CluesState.curSelectedClue = s.CluesState.curFilteredClues[s.CluesState.curSelectedIndex]
 		} else {
@@ -327,7 +327,7 @@ func (s *AppUIState) clueResultsListboxLayout() *g.CustomWidget {
 }
 
 func (s *AppUIState) directionPadChildLayout() *g.ChildWidget {
-	return g.Child().Flags(g.WindowFlagsNoNav).Size(115, 100).Layout(
+	return g.Child().Flags(g.WindowFlagsNoNav).Size(dpi.Scaledf32(115), dpi.Scaledf32(100)).Layout(
 		g.Row(g.Custom(func() {
 			g.Dummy(22.0, 0).Build()
 			if s.CurrentDirection != types.ClueDirectionUp {
